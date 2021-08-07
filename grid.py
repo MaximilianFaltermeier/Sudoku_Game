@@ -32,3 +32,8 @@ class Grid:
 
     def __setitem__(self, key, value):
         self.rows[key[0]][key[1]].set_value(value)
+
+    def update_possible_solutions_of_cells(self):
+        for row in self.rows:
+            for cell in row:
+                cell.update_possible_solutions()

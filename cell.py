@@ -11,7 +11,7 @@ class Cell:
         self.column = None
         self.block = None
         self.possible_error = False
-        self.possible_answers = list(range(9))
+        self.possible_solutions = list(range(1, 10))
 
     def set_dependencies(self, row, column, block):
         self.row = row
@@ -32,3 +32,21 @@ class Cell:
 
     def get_value(self):
         return self.__value
+
+    def update_possible_solutions(self):
+        to_be_removed_items = []
+        for value in self.possible_solutions:
+            if value in [cell.get_value() for cell in self.row]:
+                to_be_removed_items.append(value)
+            elif value in [cell.get_value() for cell in self.column]:
+                to_be_removed_items.append(value)
+            elif value in [cell.get_value() for cell in self.block]:
+                to_be_removed_items.append(value)
+
+        # this special construction deals with the challenge to have no doubling in to_be_removed_items
+        # else list.remove() throws an error
+        to_be_removed_items = set(to_be_removed_items)
+        to_be_removed_items = list(to_be_removed_items)
+
+        for elem in to_be_removed_items:
+            self.possible_solutions.remove(elem)

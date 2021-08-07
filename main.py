@@ -20,9 +20,10 @@ class SudokuBoard(object):
                 raise SudokuError("Each line in the sudoku puzzle must be 9 chars long.")
 
             for c, index in zip(line, range(9)):
-                if not c.isdigit():
+                if c.isdigit() and 0 <= int(c) <= 9:
+                    row[index].set_value(int(c), given=True)
+                else:
                     raise SudokuError("Valid characters for a sudoku puzzle must be in 0-9")
-                row[index].set_value(int(c), given=True)
 
 
 class SudokuGame(object):
@@ -42,6 +43,7 @@ class SudokuGame(object):
         for i in range(9):
             for j in range(9):
                 self.puzzle[i, j].set_value(self.start_puzzle[i, j].get_value(), given=True)
+        self.puzzle.update_possible_solutions_of_cells()
 
     def check_win(self):
         for row in self.puzzle.rows:

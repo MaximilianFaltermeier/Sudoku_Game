@@ -15,7 +15,7 @@ class SudokuUI(Frame):
         Frame.__init__(self, parent)
         self.parent = parent
         self.row, self.col = -1, -1
-
+        self.__show_possibilities = False
         self.__initUI()
 
     def __initUI(self):
@@ -26,11 +26,15 @@ class SudokuUI(Frame):
         clear_button = Button(self,
                               text="Clear answers",
                               command=self.__clear_answers)
-        clear_button.pack(fill='y', side='left', pady='5', padx='110')
+        clear_button.pack(fill='y', side='left', pady='5', padx='40')
         check_button = Button(self,
                               text="Check Sudoku",
                               command=self.__find_errors)
-        check_button.pack(fill='y', side='left', pady='5', padx='10')
+        check_button.pack(fill='y', side='left', pady='5', padx='40')
+        possibility_button = Button(self,
+                                    text="Show possibilities",
+                                    command=self.__allow_possibilities_to_be_displayed)
+        possibility_button.pack(fill='y', side='left', pady='5', padx='28')
         self.__draw_grid()
         self.__draw_puzzle()
 
@@ -75,10 +79,11 @@ class SudokuUI(Frame):
                     else:
                         color = "sea green"
                     self.canvas.create_text(x, y, text=digit, tags="numbers", fill=color)
-                else:
-                    for possibility in cell.possible_answers:
-                        x = MARGIN + j * SIDE + SIDE / 24 * (possibility % 3+0.7)*7
-                        y = MARGIN + i * SIDE + SIDE / 24 * (int(possibility / 3)+0.8)*7
+                elif self.__show_possibilities:
+                    for possibility in cell.possible_solutions:
+                        normalized_possibility = possibility-1
+                        x = MARGIN + j * SIDE + SIDE / 24 * (normalized_possibility % 3 + 0.7) * 7
+                        y = MARGIN + i * SIDE + SIDE / 24 * (int(normalized_possibility / 3) + 0.8) * 7
                         self.canvas.create_text(x, y, text=possibility, tags="possibilities", fill='grey',
                                                 font=("Purisa", 10))
 
@@ -126,6 +131,7 @@ class SudokuUI(Frame):
         if self.row >= 0 and self.col >= 0 and event.char in "1234567890":
             self.game.puzzle[self.row, self.col] = int(event.char)
             self.col, self.row = -1, -1
+            self.game.puzzle.update_possible_solutions_of_cells()
             self.__draw_puzzle()
             self.__draw_cursor()
             if self.game.check_win():
@@ -150,3 +156,7 @@ class SudokuUI(Frame):
                     if component[i].get_value() == component[j].get_value():
                         component[i].possible_error = True
                         component[j].possible_error = True
+
+    def __allow_possibilities_to_be_displayed(self):
+        self.__show_possibilities = not self.__show_possibilities
+        self.__draw_puzzle()
