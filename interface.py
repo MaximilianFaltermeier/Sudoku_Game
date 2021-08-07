@@ -58,10 +58,12 @@ class SudokuUI(Frame):
 
     def __draw_puzzle(self):
         self.canvas.delete("numbers")
+        self.canvas.delete("possibilities")
         for i in range(9):
             for j in range(9):
                 cell = self.game.puzzle[i, j]
                 digit = cell.get_value()
+
                 if digit != 0:
                     x = MARGIN + j * SIDE + SIDE / 2
                     y = MARGIN + i * SIDE + SIDE / 2
@@ -73,6 +75,12 @@ class SudokuUI(Frame):
                     else:
                         color = "sea green"
                     self.canvas.create_text(x, y, text=digit, tags="numbers", fill=color)
+                else:
+                    for possibility in cell.possible_answers:
+                        x = MARGIN + j * SIDE + SIDE / 24 * (possibility % 3+0.7)*7
+                        y = MARGIN + i * SIDE + SIDE / 24 * (int(possibility / 3)+0.8)*7
+                        self.canvas.create_text(x, y, text=possibility, tags="possibilities", fill='grey',
+                                                font=("Purisa", 10))
 
     def __draw_cursor(self):
         self.canvas.delete("cursor")

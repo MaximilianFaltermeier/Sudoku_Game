@@ -61,7 +61,7 @@ class SudokuGame(object):
 
 
 if __name__ == '__main__':
-    board_name = 'debug'
+    board_name = 'n00b'
     with open('sudokus/%s.sudoku' % board_name, 'r') as boards_file:
         game = SudokuGame(boards_file)
         game.start()

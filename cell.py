@@ -11,6 +11,7 @@ class Cell:
         self.column = None
         self.block = None
         self.possible_error = False
+        self.possible_answers = list(range(9))
 
     def set_dependencies(self, row, column, block):
         self.row = row
