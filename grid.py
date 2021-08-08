@@ -59,3 +59,8 @@ class Grid:
         """
         for component in getattr(self, components):
             component.search_for_identical_values()
+
+    def reset_possible_error(self):
+        for row in self.rows:
+            for cell in row:
+                cell.possible_error = False

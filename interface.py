@@ -162,7 +162,7 @@ class SudokuUI(Frame):
             if self.game.check_win():
                 self.__draw_victory()
 
-    def __backSpace_key_pressed(self, event):
+    def __backSpace_key_pressed(self, _):
         """
         Deletes number if BackSpace is pressed
         """
@@ -182,6 +182,9 @@ class SudokuUI(Frame):
         """
         self.game.start()
         self.canvas.delete("victory")
+        self.game.puzzle.reset_possible_solutions_of_cells()
+        self.game.puzzle.update_possible_solutions_of_cells()
+        self.game.puzzle.reset_possible_error()
         self.__draw_puzzle()
 
     def __find_errors(self):
