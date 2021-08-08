@@ -52,6 +52,7 @@ class Grid:
         for row in self.rows:
             for cell in row:
                 cell.reset_possible_solutions()
+                cell.update_possible_solutions()
 
     def search_for_identical_values_in_components(self, components):
         """

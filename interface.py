@@ -42,7 +42,7 @@ class SudokuUI(Frame):
 
         self.canvas.bind('<Button-1>', self.__cell_clicked)
         self.canvas.bind('<Key>', self.__key_pressed)
-        self.canvas.bind('<BackSpace>', self.__backSpace_key_pressed)
+        self.canvas.bind('<BackSpace>', self.__back_space_key_pressed)
 
     """------------------------------------DRAWING---------------------------------------"""
 
@@ -162,7 +162,7 @@ class SudokuUI(Frame):
             if self.game.check_win():
                 self.__draw_victory()
 
-    def __backSpace_key_pressed(self, _):
+    def __back_space_key_pressed(self, _):
         """
         Deletes number if BackSpace is pressed
         """
@@ -183,7 +183,6 @@ class SudokuUI(Frame):
         self.game.start()
         self.canvas.delete("victory")
         self.game.puzzle.reset_possible_solutions_of_cells()
-        self.game.puzzle.update_possible_solutions_of_cells()
         self.game.puzzle.reset_possible_error()
         self.__draw_puzzle()
 
@@ -203,5 +202,4 @@ class SudokuUI(Frame):
         self.__show_possibilities = not self.__show_possibilities
         if self.__show_possibilities:
             self.game.puzzle.reset_possible_solutions_of_cells()
-            self.game.puzzle.update_possible_solutions_of_cells()
         self.__draw_puzzle()
