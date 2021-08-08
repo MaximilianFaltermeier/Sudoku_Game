@@ -37,3 +37,8 @@ class Grid:
         for row in self.rows:
             for cell in row:
                 cell.update_possible_solutions()
+
+    def reset_possible_solutions_of_cells(self):
+        for row in self.rows:
+            for cell in row:
+                cell.reset_possible_solutions()

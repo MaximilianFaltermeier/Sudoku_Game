@@ -34,6 +34,10 @@ class Cell:
         return self.__value
 
     def update_possible_solutions(self):
+        """
+        Deletes all numbers from the solution suggestion which are no longer possible. Deletes only numbers which
+        collide with numbers in row, column or block. No more advanced techniques are used.
+        """
         to_be_removed_items = []
         for value in self.possible_solutions:
             if value in [cell.get_value() for cell in self.row]:
@@ -50,3 +54,6 @@ class Cell:
 
         for elem in to_be_removed_items:
             self.possible_solutions.remove(elem)
+
+    def reset_possible_solutions(self):
+        self.possible_solutions = list(range(1, 10))

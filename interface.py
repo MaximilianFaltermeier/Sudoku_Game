@@ -38,8 +38,9 @@ class SudokuUI(Frame):
         self.__draw_grid()
         self.__draw_puzzle()
 
-        self.canvas.bind("<Button-1>", self.__cell_clicked)
-        self.canvas.bind("<Key>", self.__key_pressed)
+        self.canvas.bind('<Button-1>', self.__cell_clicked)
+        self.canvas.bind('<Key>', self.__key_pressed)
+        self.canvas.bind('<BackSpace>', self.__backSpace_key_pressed)
 
     def __draw_grid(self):
         """
@@ -61,6 +62,10 @@ class SudokuUI(Frame):
             self.canvas.create_line(x0, y0, x1, y1, fill=color)
 
     def __draw_puzzle(self):
+        """
+        Draws the numbers of the grid. The colors black, red, sea green and grey mark the type of number:
+        given number, colliding numbers, users guesses and number suggestions
+        """
         self.canvas.delete("numbers")
         self.canvas.delete("possibilities")
         for i in range(9):
@@ -88,6 +93,9 @@ class SudokuUI(Frame):
                                                 font=("Purisa", 10))
 
     def __draw_cursor(self):
+        """
+        Draws a red rectangle around selected cell
+        """
         self.canvas.delete("cursor")
         if self.row >= 0 and self.col >= 0:
             x0 = MARGIN + self.col * SIDE + 1
@@ -97,6 +105,9 @@ class SudokuUI(Frame):
             self.canvas.create_rectangle(x0, y0, x1, y1, outline="red", tags="cursor")
 
     def __draw_victory(self):
+        """
+        Draws a message for the user when he has won
+        """
         # create a  a circle
         x0 = y0 = MARGIN + SIDE * 2
         x1 = y1 = MARGIN + SIDE * 7
@@ -106,6 +117,10 @@ class SudokuUI(Frame):
         self.canvas.create_text(x, y, text="You win!", tags="victory", fill="white", font=("Arial", 32))
 
     def __cell_clicked(self, event):
+        """
+        Select clicked cell
+        :param event: contains information (e.g. position) about the triggering event
+        """
         if self.game.game_over:
             return
         x, y = event.x, event.y
@@ -126,6 +141,10 @@ class SudokuUI(Frame):
         self.__draw_cursor()
 
     def __key_pressed(self, event):
+        """
+        Adds number to grid if a number key is pressed
+        :param event: contains information (e.g. pressed key) about the triggering event
+        """
         if self.game.game_over:
             return
         if self.row >= 0 and self.col >= 0 and event.char in "1234567890":
@@ -137,19 +156,40 @@ class SudokuUI(Frame):
             if self.game.check_win():
                 self.__draw_victory()
 
+    def __backSpace_key_pressed(self, event):
+        """
+        Deletes number if BackSpace is pressed
+        """
+        if self.game.game_over:
+            return
+        if self.row >= 0 and self.col >= 0:
+            self.game.puzzle[self.row, self.col] = 0
+            self.col, self.row = -1, -1
+            self.__draw_puzzle()
+            self.__draw_cursor()
+
     def __clear_answers(self):
+        """
+        Reset the board
+        """
         self.game.start()
         self.canvas.delete("victory")
         self.__draw_puzzle()
 
     def __find_errors(self):
-
+        """
+        Finds collisions and mark them red
+        """
         self.__search_for_identical_values_in_list(self.game.puzzle.columns)
         self.__search_for_identical_values_in_list(self.game.puzzle.rows)
         self.__search_for_identical_values_in_list(self.game.puzzle.blocks)
         self.__draw_puzzle()
 
     def __search_for_identical_values_in_list(self, components):
+        """
+        Finds collisions in one grid component
+        :param components: to be searched grid component
+        """
         for component in components:
             for i in range(8):
                 for j in range(i + 1, 9):
@@ -158,5 +198,12 @@ class SudokuUI(Frame):
                         component[j].possible_error = True
 
     def __allow_possibilities_to_be_displayed(self):
+        """
+        Enables/Disables showing possible solutions. Resets all suggestions after turn off and on again
+        """
         self.__show_possibilities = not self.__show_possibilities
+        if self.__show_possibilities:
+            self.game.puzzle.reset_possible_solutions_of_cells()
+            self.game.puzzle.update_possible_solutions_of_cells()
         self.__draw_puzzle()
+

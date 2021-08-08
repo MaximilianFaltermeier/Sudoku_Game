@@ -39,13 +39,19 @@ class SudokuGame(object):
         self.start_puzzle = SudokuBoard(board_file).board
 
     def start(self):
+        """
+        Init the game and starts it
+        """
         self.game_over = False
         for i in range(9):
             for j in range(9):
                 self.puzzle[i, j].set_value(self.start_puzzle[i, j].get_value(), given=True)
-        self.puzzle.update_possible_solutions_of_cells()
 
     def check_win(self):
+        """
+        Checks if game is finished
+        :return: True if finished else False
+        """
         for row in self.puzzle.rows:
             if not self.__check_block(row):
                 return False
@@ -59,6 +65,11 @@ class SudokuGame(object):
         return True
 
     def __check_block(self, block):
+        """
+        Checks if one grid component contains all numbers 1-9
+        :param block: grid component to be investigated
+        :return: True if all 9 numbers are present else False
+        """
         return set([value.get_value() for value in block.cells]) == set(range(1, 10))
 
 
