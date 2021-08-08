@@ -42,6 +42,8 @@ class SudokuUI(Frame):
         self.canvas.bind('<Key>', self.__key_pressed)
         self.canvas.bind('<BackSpace>', self.__backSpace_key_pressed)
 
+    """------------------------------------DRAWING---------------------------------------"""
+
     def __draw_grid(self):
         """
         Draws grid divided with blue lines into 3x3 squares
@@ -86,7 +88,7 @@ class SudokuUI(Frame):
                     self.canvas.create_text(x, y, text=digit, tags="numbers", fill=color)
                 elif self.__show_possibilities:
                     for possibility in cell.possible_solutions:
-                        normalized_possibility = possibility-1
+                        normalized_possibility = possibility - 1
                         x = MARGIN + j * SIDE + SIDE / 24 * (normalized_possibility % 3 + 0.7) * 7
                         y = MARGIN + i * SIDE + SIDE / 24 * (int(normalized_possibility / 3) + 0.8) * 7
                         self.canvas.create_text(x, y, text=possibility, tags="possibilities", fill='grey',
@@ -115,6 +117,8 @@ class SudokuUI(Frame):
         # create text
         x = y = MARGIN + 4 * SIDE + SIDE / 2
         self.canvas.create_text(x, y, text="You win!", tags="victory", fill="white", font=("Arial", 32))
+
+    """----------------------------------KEYS---------------------------------------"""
 
     def __cell_clicked(self, event):
         """
@@ -168,6 +172,8 @@ class SudokuUI(Frame):
             self.__draw_puzzle()
             self.__draw_cursor()
 
+    """----------------------------------BUTTONS---------------------------------------"""
+
     def __clear_answers(self):
         """
         Reset the board
@@ -180,22 +186,10 @@ class SudokuUI(Frame):
         """
         Finds collisions and mark them red
         """
-        self.__search_for_identical_values_in_list(self.game.puzzle.columns)
-        self.__search_for_identical_values_in_list(self.game.puzzle.rows)
-        self.__search_for_identical_values_in_list(self.game.puzzle.blocks)
+        self.game.puzzle.search_for_identical_values_in_components('columns')
+        self.game.puzzle.search_for_identical_values_in_components('rows')
+        self.game.puzzle.search_for_identical_values_in_components('blocks')
         self.__draw_puzzle()
-
-    def __search_for_identical_values_in_list(self, components):
-        """
-        Finds collisions in one grid component
-        :param components: to be searched grid component
-        """
-        for component in components:
-            for i in range(8):
-                for j in range(i + 1, 9):
-                    if component[i].get_value() == component[j].get_value():
-                        component[i].possible_error = True
-                        component[j].possible_error = True
 
     def __allow_possibilities_to_be_displayed(self):
         """
@@ -206,4 +200,3 @@ class SudokuUI(Frame):
             self.game.puzzle.reset_possible_solutions_of_cells()
             self.game.puzzle.update_possible_solutions_of_cells()
         self.__draw_puzzle()
-

@@ -11,6 +11,16 @@ class GridComponent:
     def __getitem__(self, item):
         return self.cells[item]
 
+    def search_for_identical_values(self):
+        """
+        Finds collisions in self.cells
+        """
+        for i in range(8):
+            for j in range(i + 1, 9):
+                if self.cells[i].get_value() == self.cells[j].get_value():
+                    self.cells[i].possible_error = True
+                    self.cells[j].possible_error = True
+
 
 class Grid:
     def __init__(self):
@@ -42,3 +52,10 @@ class Grid:
         for row in self.rows:
             for cell in row:
                 cell.reset_possible_solutions()
+
+    def search_for_identical_values_in_components(self, components):
+        """
+        Finds collisions in one component type (e.g. row, column, block)
+        """
+        for component in getattr(self, components):
+            component.search_for_identical_values()
