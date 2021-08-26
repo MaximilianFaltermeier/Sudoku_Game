@@ -11,7 +11,7 @@ class Cell:
         self.column = None
         self.block = None
         self.possible_error = False
-        self.possible_solutions = list(range(1, 10))
+        self.candidates = list(range(1, 10))
 
     def set_dependencies(self, row, column, block):
         self.row = row
@@ -33,13 +33,13 @@ class Cell:
     def get_value(self):
         return self.__value
 
-    def update_possible_solutions(self):
+    def update_candidates(self):
         """
         Deletes all numbers from the solution suggestion which are no longer possible. Deletes only numbers which
         collide with numbers in row, column or block. No more advanced techniques are used.
         """
         to_be_removed_items = []
-        for value in self.possible_solutions:
+        for value in self.candidates:
             if value in [cell.get_value() for cell in self.row]:
                 to_be_removed_items.append(value)
             elif value in [cell.get_value() for cell in self.column]:
@@ -53,7 +53,7 @@ class Cell:
         to_be_removed_items = list(to_be_removed_items)
 
         for elem in to_be_removed_items:
-            self.possible_solutions.remove(elem)
+            self.candidates.remove(elem)
 
-    def reset_possible_solutions(self):
-        self.possible_solutions = list(range(1, 10))
+    def reset_candidates(self):
+        self.candidates = list(range(1, 10))

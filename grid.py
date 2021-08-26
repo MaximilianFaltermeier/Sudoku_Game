@@ -22,6 +22,19 @@ class GridComponent:
                     self.cells[j].possible_error = True
 
 
+class GridIterator:
+    def __init__(self, grid):
+        self._grid = grid
+        self._index = 0
+
+    def __next__(self):
+        if self._index < 81:
+            cell = self._grid[int(self._index/9), self._index%9]
+            self._index += 1
+            return cell
+        raise StopIteration
+
+
 class Grid:
     def __init__(self):
         self.rows = [GridComponent() for _ in range(9)]
@@ -43,16 +56,19 @@ class Grid:
     def __setitem__(self, key, value):
         self.rows[key[0]][key[1]].set_value(value)
 
+    def __iter__(self):
+        return GridIterator(self)
+
     def update_possible_solutions_of_cells(self):
         for row in self.rows:
             for cell in row:
-                cell.update_possible_solutions()
+                cell.update_candidates()
 
     def reset_possible_solutions_of_cells(self):
         for row in self.rows:
             for cell in row:
-                cell.reset_possible_solutions()
-                cell.update_possible_solutions()
+                cell.reset_candidates()
+                cell.update_candidates()
 
     def search_for_identical_values_in_components(self, components):
         """
@@ -65,3 +81,9 @@ class Grid:
         for row in self.rows:
             for cell in row:
                 cell.possible_error = False
+
+    def find_collisions(self):
+        self.search_for_identical_values_in_components('columns')
+        self.search_for_identical_values_in_components('rows')
+        self.search_for_identical_values_in_components('blocks')
+

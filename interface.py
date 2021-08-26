@@ -1,12 +1,18 @@
-from tkinter import Canvas, Frame, Button, TOP
+from tkinter import Canvas, Frame, Button, TOP, Text, END, LEFT
+from SolutionStrategies import SolutionStrategies
 
-
-MARGIN = 20  # Pixels around the board
+GRID_OFFSET = 2  # Offset moves the whole grid in x and y direction
+MARGIN = 1  # Pixels around the board
 SIDE = 50  # Width of every board cell.
 WIDTH = HEIGHT = MARGIN * 2 + SIDE * 9  # Width and height of the whole board
 
 FONT_SUGGESTIONS = ("Purisa", 10)
 FONT_NUMBERS = ("Purisa", 15)
+FONT_HINTS = ('Tempus Sans ITC', 11, 'bold')
+FONT_BUTTONS = ('TkDefaultFont', 11)
+
+RELX_BUTTON = 0.581
+RELY_OFFSET_BUTTON = 0.07
 
 
 class SudokuUI(Frame):
@@ -25,17 +31,19 @@ class SudokuUI(Frame):
     def __initUI(self):
         self.parent.title("Sudoku")
         self.pack()
-        self.canvas = Canvas(self, width=WIDTH, height=HEIGHT)
-        self.canvas.pack(side=TOP)
+        self.canvas = Canvas(self, width=WIDTH, height=HEIGHT, bg='white')
+        self.canvas.pack(side=LEFT, pady='17')
 
-        clear_button = Button(self, text="Clear answers", command=self.__clear_answers)
-        clear_button.pack(fill='y', side='left', pady='5', padx='40')
+        clear_button = Button(self, text="Clear answers", command=self.__clear_answers, font=FONT_BUTTONS)
+        check_button = Button(self, text="Check Sudoku", command=self.__find_errors, font=FONT_BUTTONS)
+        possibility_button = Button(self, text="Show possibilities",
+                                    command=self.__allow_possibilities_to_be_displayed, font=FONT_BUTTONS)
+        hint_button = Button(self, text="Show hint", command=self.__get_hint, font=FONT_BUTTONS)
 
-        check_button = Button(self, text="Check Sudoku", command=self.__find_errors)
-        check_button.pack(fill='y', side='left', pady='5', padx='40')
-
-        possibility_button = Button(self, text="Show possibilities", command=self.__allow_possibilities_to_be_displayed)
-        possibility_button.pack(fill='y', side='left', pady='5', padx='28')
+        clear_button.place(relx=RELX_BUTTON, rely=0.5 + RELY_OFFSET_BUTTON)
+        check_button.place(relx=RELX_BUTTON, rely=0.6 + RELY_OFFSET_BUTTON)
+        possibility_button.place(relx=RELX_BUTTON, rely=0.7 + RELY_OFFSET_BUTTON)
+        hint_button.place(relx=RELX_BUTTON, rely=0.8 + RELY_OFFSET_BUTTON)
 
         self.__draw_grid()
         self.__draw_puzzle()
@@ -43,6 +51,16 @@ class SudokuUI(Frame):
         self.canvas.bind('<Button-1>', self.__cell_clicked)
         self.canvas.bind('<Key>', self.__key_pressed)
         self.canvas.bind('<BackSpace>', self.__back_space_key_pressed)
+
+        self.text_field = Text(self, height=15, width=40)
+        self.text_field.tag_configure('color', foreground='#476042', font=FONT_HINTS, justify='left')
+        quote = """
+        If you want a hint, use the hint button
+        good luck :)
+        """
+        self.text_field.insert(END, quote, 'color')
+        self.text_field.tag_add('initialText', 1.0, END)
+        self.text_field.pack(side=TOP, pady='20', padx='10')
 
     """------------------------------------DRAWING---------------------------------------"""
 
@@ -53,16 +71,16 @@ class SudokuUI(Frame):
         for i in range(10):
             color = "blue" if i % 3 == 0 else "gray"
 
-            x0 = MARGIN + i * SIDE
-            y0 = MARGIN
-            x1 = MARGIN + i * SIDE
-            y1 = HEIGHT - MARGIN
+            x0 = MARGIN + i * SIDE + GRID_OFFSET
+            y0 = MARGIN + GRID_OFFSET
+            x1 = MARGIN + i * SIDE + GRID_OFFSET
+            y1 = HEIGHT - MARGIN + GRID_OFFSET
             self.canvas.create_line(x0, y0, x1, y1, fill=color)
 
-            x0 = MARGIN
-            y0 = MARGIN + i * SIDE
-            x1 = WIDTH - MARGIN
-            y1 = MARGIN + i * SIDE
+            x0 = MARGIN + GRID_OFFSET
+            y0 = MARGIN + i * SIDE + GRID_OFFSET
+            x1 = WIDTH - MARGIN + GRID_OFFSET
+            y1 = MARGIN + i * SIDE + GRID_OFFSET
             self.canvas.create_line(x0, y0, x1, y1, fill=color)
 
     def __draw_puzzle(self):
@@ -74,7 +92,7 @@ class SudokuUI(Frame):
         self.canvas.delete("possibilities")
         for i in range(9):
             for j in range(9):
-                cell = self.game.puzzle[i, j]
+                cell = self.game.grid[i, j]
                 digit = cell.get_value()
 
                 if digit != 0:
@@ -89,7 +107,7 @@ class SudokuUI(Frame):
                         color = "sea green"
                     self.canvas.create_text(x, y, text=digit, tags="numbers", fill=color, font=FONT_NUMBERS)
                 elif self.__show_possibilities:
-                    for possibility in cell.possible_solutions:
+                    for possibility in cell.candidates:
                         normalized_possibility = possibility - 1
                         x = MARGIN + j * SIDE + SIDE / 24 * (normalized_possibility % 3 + 0.7) * 7
                         y = MARGIN + i * SIDE + SIDE / 24 * (int(normalized_possibility / 3) + 0.8) * 7
@@ -139,7 +157,7 @@ class SudokuUI(Frame):
             # if cell was selected already - deselect it
             if (row, col) == (self.row, self.col):
                 self.row, self.col = -1, -1
-            elif not self.game.puzzle[row, col].given:
+            elif not self.game.grid[row, col].given:
                 self.row, self.col = row, col
         else:
             self.row, self.col = -1, -1
@@ -154,9 +172,9 @@ class SudokuUI(Frame):
         if self.game.game_over:
             return
         if self.row >= 0 and self.col >= 0 and event.char in "1234567890":
-            self.game.puzzle[self.row, self.col] = int(event.char)
+            self.game.grid[self.row, self.col] = int(event.char)
             self.col, self.row = -1, -1
-            self.game.puzzle.update_possible_solutions_of_cells()
+            self.game.grid.update_possible_solutions_of_cells()
             self.__draw_puzzle()
             self.__draw_cursor()
             if self.game.check_win():
@@ -169,7 +187,7 @@ class SudokuUI(Frame):
         if self.game.game_over:
             return
         if self.row >= 0 and self.col >= 0:
-            self.game.puzzle[self.row, self.col] = 0
+            self.game.grid[self.row, self.col] = 0
             self.col, self.row = -1, -1
             self.__draw_puzzle()
             self.__draw_cursor()
@@ -180,19 +198,15 @@ class SudokuUI(Frame):
         """
         Reset the board
         """
-        self.game.start()
+        self.game.reset_board()
         self.canvas.delete("victory")
-        self.game.puzzle.reset_possible_solutions_of_cells()
-        self.game.puzzle.reset_possible_error()
         self.__draw_puzzle()
 
     def __find_errors(self):
         """
         Finds collisions and mark them red
         """
-        self.game.puzzle.search_for_identical_values_in_components('columns')
-        self.game.puzzle.search_for_identical_values_in_components('rows')
-        self.game.puzzle.search_for_identical_values_in_components('blocks')
+        self.game.grid.find_collisions()
         self.__draw_puzzle()
 
     def __allow_possibilities_to_be_displayed(self):
@@ -201,5 +215,12 @@ class SudokuUI(Frame):
         """
         self.__show_possibilities = not self.__show_possibilities
         if self.__show_possibilities:
-            self.game.puzzle.reset_possible_solutions_of_cells()
+            self.game.grid.reset_possible_solutions_of_cells()
         self.__draw_puzzle()
+
+    def __get_hint(self):
+        strategy = SolutionStrategies(self.game.grid)
+        strategy._test()
+        # strategy.iterate_over_grid(strategy.single_choice)
+        # for cell in self.game.grid:
+        #     print(cell.get_value())
