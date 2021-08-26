@@ -220,7 +220,4 @@ class SudokuUI(Frame):
 
     def __get_hint(self):
         strategy = SolutionStrategies(self.game.grid)
-        strategy._test()
-        # strategy.iterate_over_grid(strategy.single_choice)
-        # for cell in self.game.grid:
-        #     print(cell.get_value())
+        print(strategy.give_strategy())

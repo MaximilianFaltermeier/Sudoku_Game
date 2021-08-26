@@ -28,9 +28,10 @@ class SolutionStrategies:
         }
         return self.solution
 
-    def _give_strategy(self):
+    def give_strategy(self):
+        self._grid.reset_possible_solutions_of_cells()
         for method in dir(self):
-            if method.startswith('_') is False:
+            if method.startswith('_') is False and method.startswith('give') is False:
                 method_to_be_applied = getattr(self, method)
                 success = method_to_be_applied()
                 if success:
@@ -50,4 +51,21 @@ class SolutionStrategies:
             self._hint_type = SOLUTION
             self._suggestions = [cell.candidates[0]]
             return True
+        return False
+
+    def hidden_single(self):
+        for grid_component in ['rows', 'columns', 'blocks']:
+            for row in getattr(self._grid, grid_component):
+                for i in range(9):
+                    for candidate in row[i].candidates:
+                        candidate_is_unique = True
+                        for j in range(9):
+                            if i != j and candidate in row[j].candidates:
+                                candidate_is_unique = False
+                                break
+                        if candidate_is_unique:
+                            self._concerning_cells.append(row[i])
+                            self._hint_type = SOLUTION
+                            self._suggestions = [candidate]
+                            return True
         return False

@@ -38,6 +38,9 @@ class Cell:
         Deletes all numbers from the solution suggestion which are no longer possible. Deletes only numbers which
         collide with numbers in row, column or block. No more advanced techniques are used.
         """
+        if self.__value != 0:
+            self.candidates = []
+            return 0
         to_be_removed_items = []
         for value in self.candidates:
             if value in [cell.get_value() for cell in self.row]:
