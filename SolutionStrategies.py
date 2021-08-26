@@ -13,7 +13,7 @@ class SolutionStrategies:
 
     def _iterate_over_grid(self, func):
         for cell in self._grid:
-            if not cell.given:
+            if cell.get_value() == 0:
                 success = func(cell)
                 if success:
                     return True
@@ -43,7 +43,7 @@ class SolutionStrategies:
     '''--------------------------------strategies--------------------------------------------------'''
 
     def single_choice(self):
-        return self._iterate_over_grid(self.single_choice)
+        return self._iterate_over_grid(self._single_choice)
 
     def _single_choice(self, cell):
         if len(cell.candidates) == 1:
@@ -55,16 +55,16 @@ class SolutionStrategies:
 
     def hidden_single(self):
         for grid_component in ['rows', 'columns', 'blocks']:
-            for row in getattr(self._grid, grid_component):
+            for cell_list in getattr(self._grid, grid_component):
                 for i in range(9):
-                    for candidate in row[i].candidates:
+                    for candidate in cell_list[i].candidates:
                         candidate_is_unique = True
                         for j in range(9):
-                            if i != j and candidate in row[j].candidates:
+                            if i != j and candidate in cell_list[j].candidates:
                                 candidate_is_unique = False
                                 break
                         if candidate_is_unique:
-                            self._concerning_cells.append(row[i])
+                            self._concerning_cells.append(cell_list[i])
                             self._hint_type = SOLUTION
                             self._suggestions = [candidate]
                             return True
