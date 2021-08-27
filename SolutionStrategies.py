@@ -10,6 +10,7 @@ class SolutionStrategies:
         self._suggestions = []
         self._method = []
         self._success = False
+        self._message = ''
 
     def _check_with_sample_solution(self):
         no_error = True
@@ -35,7 +36,8 @@ class SolutionStrategies:
             'concerning_cells': self._concerning_cells,
             'hint_type': self._hint_type,
             'suggestions': self._suggestions,
-            'method': self._method
+            'method': self._method,
+            'message': self._message
         }
         return self._solution_strategy
 
@@ -63,6 +65,8 @@ class SolutionStrategies:
             self._concerning_cells.append(cell)
             self._hint_type = SOLUTION
             self._suggestions = [cell.candidates[0]]
+            self._message = 'According the single_choice rule, a {} is placed at cell ({}, {})'\
+                .format(self._suggestions[0], cell.coordinates[0] + 1, cell.coordinates[1] + 1)
             return True
         return False
 
@@ -80,5 +84,8 @@ class SolutionStrategies:
                             self._concerning_cells.append(cell_list[i])
                             self._hint_type = SOLUTION
                             self._suggestions = [candidate]
+                            self._message = 'According the hidden_single rule, a {} is placed at cell ({}, {})' \
+                                .format(self._suggestions[0], cell_list[i].coordinates[0] + 1,
+                                        cell_list[i].coordinates[1] + 1)
                             return True
         return False

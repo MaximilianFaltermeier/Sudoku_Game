@@ -2,7 +2,7 @@ from exception_class import SudokuError
 
 
 class Cell:
-    def __init__(self):
+    def __init__(self, row, column):
         # private variables
         self.__value = 0
         # public variables
@@ -12,6 +12,7 @@ class Cell:
         self.block = None
         self.error = False
         self.candidates = list(range(1, 10))
+        self.coordinates = (row, column)
 
     def __iter__(self):
         return self

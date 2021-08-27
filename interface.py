@@ -1,8 +1,7 @@
-from tkinter import Canvas, Frame, Button, TOP, Text, END, LEFT
+from tkinter import Canvas, Frame, Button, TOP, Text, END, LEFT, Label
 from global_constants import *
 import grid
 from SolutionStrategies import SolutionStrategies
-
 
 RELX_BUTTON = 0.581
 RELY_OFFSET_BUTTON = 0.07
@@ -25,7 +24,7 @@ class SudokuUI(Frame):
         self.parent.title("Sudoku")
         self.pack()
         self.canvas = Canvas(self, width=WIDTH, height=HEIGHT, bg='white')
-        self.canvas.pack(side=LEFT, pady='17')
+        self.canvas.pack(side=LEFT, pady='17', padx='15')
 
         clear_button = Button(self, text="Clear answers", command=self.__clear_answers, font=FONT_BUTTONS)
         check_button = Button(self, text="Check Sudoku", command=self.__find_errors, font=FONT_BUTTONS)
@@ -44,14 +43,11 @@ class SudokuUI(Frame):
         self.canvas.bind('<Button-1>', self.__cell_clicked)
         self.canvas.bind('<Key>', self.__key_pressed)
         self.canvas.bind('<BackSpace>', self.__back_space_key_pressed)
-
-        self.text_field = Text(self, height=15, width=40)
+        quote = 'If you want a hint, use the hint button\ngood luck :)\n'
+        self.text_field = Text(self, height=15, width=60, padx=0)
         self.text_field.tag_configure('color', foreground='#476042', font=FONT_HINTS, justify='left')
-        quote = """
-        If you want a hint, use the hint button
-        good luck :)
-        """
-        self.text_field.insert(END, quote, 'color')
+
+        self.text_field.insert('1.0', quote, 'color')
         self.text_field.tag_add('initialText', 1.0, END)
         self.text_field.pack(side=TOP, pady='20', padx='10')
 
@@ -130,6 +126,10 @@ class SudokuUI(Frame):
         # create text
         x = y = MARGIN + 4 * SIDE + SIDE / 2
         self.canvas.create_text(x, y, text="You win!", tags="victory", fill="white", font=("Arial", 32))
+
+    def __draw_text(self, text):
+        self.text_field.tag_configure('message', foreground='#476042', font=FONT_HINTS, justify='left')
+        self.text_field.insert(END, text+'\n', 'message')
 
     """----------------------------------KEYS---------------------------------------"""
 
@@ -215,6 +215,5 @@ class SudokuUI(Frame):
         strategy = SolutionStrategies(self.game).give_strategy()
         if type(strategy) != bool and strategy['hint_type'] == SOLUTION:
             self.game.grid.apply_hint(strategy)
-        print(strategy)
         self.__draw_puzzle()
-
+        self.__draw_text(strategy['message'])

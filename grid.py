@@ -43,7 +43,7 @@ class Grid:
 
         for row in range(9):
             for column in range(9):
-                cell = Cell()
+                cell = Cell(row, column)
                 self.rows[row].cells.append(cell)
                 self.columns[column].cells.append(cell)
                 block = int(row / 3) * 3 + int(column / 3)
