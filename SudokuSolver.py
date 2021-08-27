@@ -4,12 +4,12 @@ from exception_class import SudokuError
 
 class SudokuSolver:
     def __init__(self, grid):
-        self.sudoku = np.zeros((9, 9))
+        self._sudoku = np.zeros((9, 9))
         for i in range(9):
             for j in range(9):
                 if grid[i, j].given:
-                    self.sudoku[i, j] = grid[i, j].get_value()
-        self.state = self.sudoku.copy()
+                    self._sudoku[i, j] = grid[i, j].get_value()
+        self._state = self._sudoku.copy()
 
     def get_solution(self):
         """
@@ -19,15 +19,15 @@ class SudokuSolver:
         -> no actual tree is build
         :return: np.array of finished sudoku
         """
-        frontier = [self.state]
+        frontier = [self._state]
         while not len(frontier) == 0:
-            self.state = frontier.pop()
-            if self._check_if_finished():
-                return self.state
+            self._state = frontier.pop()
+            if self.__check_if_finished():
+                return self._state
 
-            idx, idy = self.find_zero()
+            idx, idy = self.__find_zero()
             for digit in range(1, 10):
-                state_copy = self.state.copy()
+                state_copy = self._state.copy()
                 state_copy[idx, idy] = digit
                 if self.__check_if_valid(state_copy, idx, idy):
                     frontier.append(state_copy)
@@ -55,19 +55,19 @@ class SudokuSolver:
                         return False
         return True
 
-    def _check_if_finished(self):
-        valid = [set(self.state[i, ...].tolist()) == set(range(1, 10)) for i in range(9)]
-        valid = valid + [set(self.state[..., i].tolist()) == set(range(1, 10)) for i in range(9)]
+    def __check_if_finished(self):
+        valid = [set(self._state[i, ...].tolist()) == set(range(1, 10)) for i in range(9)]
+        valid = valid + [set(self._state[..., i].tolist()) == set(range(1, 10)) for i in range(9)]
         for i in range(3):
             for j in range(3):
-                block = self.state[i*3:(i + 1) * 3, j*3:(j + 1) * 3].tolist()
+                block = self._state[i * 3:(i + 1) * 3, j * 3:(j + 1) * 3].tolist()
                 block = block[0] + block[1] + block[2]
                 valid.append(set(block) == set(range(1, 10)))
         return all(valid)
 
-    def find_zero(self):
+    def __find_zero(self):
         for i in range(9):
             for j in range(9):
-                if self.state[i, j] == 0:
+                if self._state[i, j] == 0:
                     return i, j
         raise SudokuError("SudokuSolver couldn't find zero although sudoku isn't finished")
