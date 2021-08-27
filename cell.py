@@ -10,16 +10,19 @@ class Cell:
         self.row = None
         self.column = None
         self.block = None
-        self.possible_error = False
+        self.error = False
         self.candidates = list(range(1, 10))
+
+    def __iter__(self):
+        return self
+
+    def __deepcopy__(self):
+        pass
 
     def set_dependencies(self, row, column, block):
         self.row = row
         self.column = column
         self.block = block
-
-    def __iter__(self):
-        return self
 
     def set_value(self, number, given=False):
         if not (isinstance(number, int) and 0 <= number < 10):

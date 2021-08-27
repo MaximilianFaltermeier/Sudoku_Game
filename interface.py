@@ -1,15 +1,8 @@
 from tkinter import Canvas, Frame, Button, TOP, Text, END, LEFT
+from global_constants import *
+import grid
 from SolutionStrategies import SolutionStrategies
 
-GRID_OFFSET = 2  # Offset moves the whole grid in x and y direction
-MARGIN = 1  # Pixels around the board
-SIDE = 50  # Width of every board cell.
-WIDTH = HEIGHT = MARGIN * 2 + SIDE * 9  # Width and height of the whole board
-
-FONT_SUGGESTIONS = ("Purisa", 10)
-FONT_NUMBERS = ("Purisa", 15)
-FONT_HINTS = ('Tempus Sans ITC', 11, 'bold')
-FONT_BUTTONS = ('TkDefaultFont', 11)
 
 RELX_BUTTON = 0.581
 RELY_OFFSET_BUTTON = 0.07
@@ -100,9 +93,9 @@ class SudokuUI(Frame):
                     y = MARGIN + i * SIDE + SIDE / 2
                     if cell.given:
                         color = "black"
-                    elif cell.possible_error:
+                    elif cell.error:
                         color = "red"
-                        cell.possible_error = False
+                        cell.error = False
                     else:
                         color = "sea green"
                     self.canvas.create_text(x, y, text=digit, tags="numbers", fill=color, font=FONT_NUMBERS)
@@ -120,10 +113,10 @@ class SudokuUI(Frame):
         """
         self.canvas.delete("cursor")
         if self.row >= 0 and self.col >= 0:
-            x0 = MARGIN + self.col * SIDE + 1
-            y0 = MARGIN + self.row * SIDE + 1
-            x1 = MARGIN + (self.col + 1) * SIDE - 1
-            y1 = MARGIN + (self.row + 1) * SIDE - 1
+            x0 = MARGIN + self.col * SIDE + 1 + GRID_OFFSET
+            y0 = MARGIN + self.row * SIDE + 1 + GRID_OFFSET
+            x1 = MARGIN + (self.col + 1) * SIDE - 1 + GRID_OFFSET
+            y1 = MARGIN + (self.row + 1) * SIDE - 1 + GRID_OFFSET
             self.canvas.create_rectangle(x0, y0, x1, y1, outline="red", tags="cursor")
 
     def __draw_victory(self):
@@ -219,5 +212,9 @@ class SudokuUI(Frame):
         self.__draw_puzzle()
 
     def __get_hint(self):
-        strategy = SolutionStrategies(self.game.grid)
-        print(strategy.give_strategy())
+        strategy = SolutionStrategies(self.game).give_strategy()
+        if type(strategy) != bool and strategy['hint_type'] == SOLUTION:
+            self.game.grid.apply_hint(strategy)
+        print(strategy)
+        self.__draw_puzzle()
+

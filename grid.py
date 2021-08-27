@@ -18,8 +18,8 @@ class GridComponent:
         for i in range(8):
             for j in range(i + 1, 9):
                 if self.cells[i].get_value() == self.cells[j].get_value():
-                    self.cells[i].possible_error = True
-                    self.cells[j].possible_error = True
+                    self.cells[i].error = True
+                    self.cells[j].error = True
 
 
 class GridIterator:
@@ -80,10 +80,14 @@ class Grid:
     def reset_possible_error(self):
         for row in self.rows:
             for cell in row:
-                cell.possible_error = False
+                cell.error = False
 
     def find_collisions(self):
         self.search_for_identical_values_in_components('columns')
         self.search_for_identical_values_in_components('rows')
         self.search_for_identical_values_in_components('blocks')
+
+    def apply_hint(self, strategy):
+        strategy['concerning_cells'].pop().set_value(strategy['suggestions'].pop())
+        self.update_possible_solutions_of_cells()
 

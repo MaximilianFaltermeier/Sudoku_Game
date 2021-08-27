@@ -1,5 +1,6 @@
 from exception_class import SudokuError
 from grid import Grid
+from SudokuSolver import SudokuSolver
 
 
 class SudokuBoardReader(object):
@@ -32,6 +33,7 @@ class SudokuGame(object):
         self.grid = Grid()
         self.board_file = board_file
         self.start_puzzle = SudokuBoardReader(board_file).board
+        self.__solution = []
 
     def start(self):
         """
@@ -41,6 +43,11 @@ class SudokuGame(object):
         for i in range(9):
             for j in range(9):
                 self.grid[i, j].set_value(self.start_puzzle[i, j].get_value(), given=True)
+
+    def get_solution(self):
+        if len(self.__solution) == 0:
+            self.__solution = SudokuSolver(self.start_puzzle).get_solution()
+        return self.__solution
 
     def check_win(self):
         """
