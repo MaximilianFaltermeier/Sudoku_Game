@@ -59,12 +59,12 @@ class Grid:
     def __iter__(self):
         return GridIterator(self)
 
-    def update_possible_solutions_of_cells(self):
+    def update_candidates_of_cells(self):
         for row in self.rows:
             for cell in row:
                 cell.update_candidates()
 
-    def reset_possible_solutions_of_cells(self):
+    def reset_candidates_of_cells(self):
         for row in self.rows:
             for cell in row:
                 cell.reset_candidates()
@@ -77,7 +77,7 @@ class Grid:
         for component in getattr(self, components):
             component.search_for_identical_values()
 
-    def reset_possible_error(self):
+    def reset_error_flag(self):
         for row in self.rows:
             for cell in row:
                 cell.error = False
@@ -93,4 +93,4 @@ class Grid:
                 cell.reset_candidates()
         elif strategy['hint_type'] == SOLUTION:
             strategy['concerning_cells'].pop().set_value(strategy['suggestions'].pop())
-        self.update_possible_solutions_of_cells()
+        self.update_candidates_of_cells()

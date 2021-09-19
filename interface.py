@@ -13,7 +13,7 @@ class SudokuUI(Frame):
         Frame.__init__(self, parent)
         self.parent = parent
         self.row, self.col = -1, -1
-        self.__show_possibilities = False
+        self.__show_candidates = False
         self.__label_list = []
         self.__initUI()
 
@@ -25,13 +25,13 @@ class SudokuUI(Frame):
 
         clear_button = Button(self, text="Clear answers", command=self.__clear_answers, font=FONT_BUTTONS)
         check_button = Button(self, text="Check Sudoku", command=self.__find_errors, font=FONT_BUTTONS)
-        possibility_button = Button(self, text="Show possibilities",
-                                    command=self.__allow_possibilities_to_be_displayed, font=FONT_BUTTONS)
+        candidate_button = Button(self, text="Show candidates",
+                                  command=self.__allow_candidates_to_be_displayed, font=FONT_BUTTONS)
         hint_button = Button(self, text="Show hint", command=self.__get_hint, font=FONT_BUTTONS)
 
         clear_button.place(relx=RELX_BUTTON, rely=0.5 + RELY_OFFSET_BUTTON)
         check_button.place(relx=RELX_BUTTON, rely=0.6 + RELY_OFFSET_BUTTON)
-        possibility_button.place(relx=RELX_BUTTON, rely=0.7 + RELY_OFFSET_BUTTON)
+        candidate_button.place(relx=RELX_BUTTON, rely=0.7 + RELY_OFFSET_BUTTON)
         hint_button.place(relx=RELX_BUTTON, rely=0.8 + RELY_OFFSET_BUTTON)
 
         self.__draw_grid()
@@ -93,39 +93,39 @@ class SudokuUI(Frame):
                     else:
                         color = "sea green"
                     self.canvas.create_text(x, y, text=digit, tags="numbers", fill=color, font=FONT_NUMBERS)
-                elif self.__show_possibilities:
-                    self.update_possibilities(cell, i, j)
+                elif self.__show_candidates:
+                    self.update_labels_of_candidates(cell, i, j)
 
-    def update_possibilities(self, cell, i, j):
-        for possibility in range(1, 10):
-            normalized_possibility = possibility - 1
-            x = MARGIN + j * SIDE + SIDE / 24 * (normalized_possibility % 3 + 0.7) * 7 - 5
-            y = MARGIN + i * SIDE + SIDE / 24 * (int(normalized_possibility / 3)) * 7 + 3
+    def update_labels_of_candidates(self, cell, i, j):
+        for candidate in range(1, 10):
+            position_variable = candidate - 1
+            x = MARGIN + j * SIDE + SIDE / 24 * (position_variable % 3 + 0.7) * 7 - 5
+            y = MARGIN + i * SIDE + SIDE / 24 * (int(position_variable / 3)) * 7 + 3
 
-            if possibility in cell.candidates:
+            if candidate in cell.candidates:
                 digit_color = '#777777'
             else:
                 digit_color = '#E0E0E0'
 
-            new_label = Label(self.canvas, text=possibility, cursor="hand2", font=FONT_SUGGESTIONS,
+            new_label = Label(self.canvas, text=candidate, cursor="hand2", font=FONT_SUGGESTIONS,
                               bg='white', fg=digit_color, padx=-1, pady=-20)
             new_label.place(x=x, y=y)
-            # new_label.bind("<Button-3>", lambda _: self.__possibility_clicked(cell, possibility))
-            if possibility == 1:
+            # new_label.bind("<Button-3>", lambda _: self.__candidate_clicked(cell, candidate))
+            if candidate == 1:
                 new_label.bind("<Button-3>", lambda _: self.__label1(cell))
-            elif possibility == 2:
+            elif candidate == 2:
                 new_label.bind("<Button-3>", lambda _: self.__label2(cell))
-            elif possibility == 3:
+            elif candidate == 3:
                 new_label.bind("<Button-3>", lambda _: self.__label3(cell))
-            elif possibility == 4:
+            elif candidate == 4:
                 new_label.bind("<Button-3>", lambda _: self.__label4(cell))
-            elif possibility == 5:
+            elif candidate == 5:
                 new_label.bind("<Button-3>", lambda _: self.__label5(cell))
-            elif possibility == 6:
+            elif candidate == 6:
                 new_label.bind("<Button-3>", lambda _: self.__label6(cell))
-            elif possibility == 7:
+            elif candidate == 7:
                 new_label.bind("<Button-3>", lambda _: self.__label7(cell))
-            elif possibility == 8:
+            elif candidate == 8:
                 new_label.bind("<Button-3>", lambda _: self.__label8(cell))
             else:
                 new_label.bind("<Button-3>", lambda _: self.__label9(cell))
@@ -196,7 +196,7 @@ class SudokuUI(Frame):
         if self.row >= 0 and self.col >= 0 and event.char in "1234567890":
             self.game.grid[self.row, self.col] = int(event.char)
             self.col, self.row = -1, -1
-            self.game.grid.update_possible_solutions_of_cells()
+            self.game.grid.update_candidates_of_cells()
             self.__draw_puzzle()
             self.__draw_cursor()
             if self.game.check_win():
@@ -214,40 +214,40 @@ class SudokuUI(Frame):
             self.__draw_puzzle()
             self.__draw_cursor()
 
-    def __possibility_clicked(self, cell, value_of_label):
+    def __candidate_clicked(self, cell, value_of_label):
         if value_of_label in cell.candidates:
             cell.candidates.remove(value_of_label)
         else:
             cell.candidates.append(value_of_label)
 
-        self.update_possibilities(cell, cell.coordinates[0], cell.coordinates[1])
+        self.update_labels_of_candidates(cell, cell.coordinates[0], cell.coordinates[1])
 
     def __label1(self, cell):
-        self.__possibility_clicked(cell, 1)
+        self.__candidate_clicked(cell, 1)
 
     def __label2(self, cell):
-        self.__possibility_clicked(cell, 2)
+        self.__candidate_clicked(cell, 2)
 
     def __label3(self, cell):
-        self.__possibility_clicked(cell, 3)
+        self.__candidate_clicked(cell, 3)
 
     def __label4(self, cell):
-        self.__possibility_clicked(cell, 4)
+        self.__candidate_clicked(cell, 4)
 
     def __label5(self, cell):
-        self.__possibility_clicked(cell, 5)
+        self.__candidate_clicked(cell, 5)
 
     def __label6(self, cell):
-        self.__possibility_clicked(cell, 6)
+        self.__candidate_clicked(cell, 6)
 
     def __label7(self, cell):
-        self.__possibility_clicked(cell, 7)
+        self.__candidate_clicked(cell, 7)
 
     def __label8(self, cell):
-        self.__possibility_clicked(cell, 8)
+        self.__candidate_clicked(cell, 8)
 
     def __label9(self, cell):
-        self.__possibility_clicked(cell, 9)
+        self.__candidate_clicked(cell, 9)
 
     """----------------------------------BUTTONS---------------------------------------"""
 
@@ -266,13 +266,13 @@ class SudokuUI(Frame):
         self.game.grid.find_collisions()
         self.__draw_puzzle()
 
-    def __allow_possibilities_to_be_displayed(self):
+    def __allow_candidates_to_be_displayed(self):
         """
-        Enables/Disables showing possible solutions. Resets all suggestions after turn off and on again
+        Enables/Disables showing candidates. Resets all suggestions after turn off and on again
         """
-        self.__show_possibilities = not self.__show_possibilities
-        # if self.__show_possibilities:
-        #     self.game.grid.reset_possible_solutions_of_cells()
+        self.__show_candidates = not self.__show_candidates
+        # if self.__show_candidates:
+        #     self.game.grid.reset_candidates_of_cells()
         self.__draw_puzzle()
 
     def __get_hint(self):

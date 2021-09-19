@@ -76,5 +76,5 @@ class SudokuGame(object):
 
     def reset_board(self):
         self.start()
-        self.grid.reset_possible_solutions_of_cells()
-        self.grid.reset_possible_error()
+        self.grid.reset_candidates_of_cells()
+        self.grid.reset_error_flag()

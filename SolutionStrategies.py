@@ -54,7 +54,7 @@ class SolutionStrategies:
     def give_strategy(self):
         if not self._check_with_sample_solution():
             return self._return_strategy()
-        self._grid.reset_possible_solutions_of_cells()
+        self._grid.reset_candidates_of_cells()
         for method in dir(self):
             if method.startswith('_') is False and method.startswith('give') is False:
                 method_to_be_applied = getattr(self, method)

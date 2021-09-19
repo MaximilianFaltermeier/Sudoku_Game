@@ -8,7 +8,7 @@ def setup_sudoku(request):
     with open('sudokus/%s.sudoku' % request.param, 'r') as boards_file:
         game = SudokuGame(boards_file)
         game.start()
-        game.grid.reset_possible_solutions_of_cells()
+        game.grid.reset_candidates_of_cells()
         strategy = SolutionStrategies(game.grid)
         yield game.grid, strategy
 
