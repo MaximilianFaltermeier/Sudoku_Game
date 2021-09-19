@@ -33,6 +33,7 @@ class Cell:
         elif self.given:
             raise SudokuError('given value cannot be overwritten')
         self.__value = number
+        self.error = False
 
     def get_value(self):
         return self.__value

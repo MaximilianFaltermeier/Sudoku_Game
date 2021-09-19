@@ -33,19 +33,20 @@ class SudokuSolver:
                     frontier.append(state_copy)
         raise SudokuError("SudokuSolver couldn't find a solution")
 
-    def __check_if_valid(self, state_copy, current_row, current_column):
+    @staticmethod
+    def __check_if_valid(state_copy, current_row, current_column):
         new_entry = state_copy[current_row, current_column]
         # checks validity of row
         for column in range(9):
             if column == current_column:
-                continue
-            if new_entry == state_copy[current_row, column]:
+                pass
+            elif new_entry == state_copy[current_row, column]:
                 return False
         # checks validity of column
         for row in range(9):
             if row == current_row:
-                continue
-            if new_entry == state_copy[row, current_column]:
+                pass
+            elif new_entry == state_copy[row, current_column]:
                 return False
         # checks validity of block
         for i in range(int(current_row / 3)*3, int(current_row / 3)*3 + 3):

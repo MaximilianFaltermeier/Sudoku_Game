@@ -1,10 +1,6 @@
-from tkinter import Canvas, Frame, Button, TOP, Text, END, LEFT, Label
+from tkinter import Canvas, Frame, Button, TOP, Text, END, LEFT, Label, BOTTOM
 from global_constants import *
-import grid
 from SolutionStrategies import SolutionStrategies
-
-RELX_BUTTON = 0.581
-RELY_OFFSET_BUTTON = 0.07
 
 
 class SudokuUI(Frame):
@@ -18,6 +14,7 @@ class SudokuUI(Frame):
         self.parent = parent
         self.row, self.col = -1, -1
         self.__show_possibilities = False
+        self.__label_list = []
         self.__initUI()
 
     def __initUI(self):
@@ -78,7 +75,8 @@ class SudokuUI(Frame):
         given number, colliding numbers, users guesses and number suggestions
         """
         self.canvas.delete("numbers")
-        self.canvas.delete("possibilities")
+        for label in self.__label_list:
+            label.destroy()
         for i in range(9):
             for j in range(9):
                 cell = self.game.grid[i, j]
@@ -96,12 +94,43 @@ class SudokuUI(Frame):
                         color = "sea green"
                     self.canvas.create_text(x, y, text=digit, tags="numbers", fill=color, font=FONT_NUMBERS)
                 elif self.__show_possibilities:
-                    for possibility in cell.candidates:
-                        normalized_possibility = possibility - 1
-                        x = MARGIN + j * SIDE + SIDE / 24 * (normalized_possibility % 3 + 0.7) * 7
-                        y = MARGIN + i * SIDE + SIDE / 24 * (int(normalized_possibility / 3) + 0.8) * 7
-                        self.canvas.create_text(x, y, text=possibility, tags="possibilities", fill='grey',
-                                                font=FONT_SUGGESTIONS)
+                    self.update_possibilities(cell, i, j)
+
+    def update_possibilities(self, cell, i, j):
+        for possibility in range(1, 10):
+            normalized_possibility = possibility - 1
+            x = MARGIN + j * SIDE + SIDE / 24 * (normalized_possibility % 3 + 0.7) * 7 - 5
+            y = MARGIN + i * SIDE + SIDE / 24 * (int(normalized_possibility / 3)) * 7 + 3
+
+            if possibility in cell.candidates:
+                digit_color = '#777777'
+            else:
+                digit_color = '#E0E0E0'
+
+            new_label = Label(self.canvas, text=possibility, cursor="hand2", font=FONT_SUGGESTIONS,
+                              bg='white', fg=digit_color, padx=-1, pady=-20)
+            new_label.place(x=x, y=y)
+            # new_label.bind("<Button-3>", lambda _: self.__possibility_clicked(cell, possibility))
+            if possibility == 1:
+                new_label.bind("<Button-3>", lambda _: self.__label1(cell))
+            elif possibility == 2:
+                new_label.bind("<Button-3>", lambda _: self.__label2(cell))
+            elif possibility == 3:
+                new_label.bind("<Button-3>", lambda _: self.__label3(cell))
+            elif possibility == 4:
+                new_label.bind("<Button-3>", lambda _: self.__label4(cell))
+            elif possibility == 5:
+                new_label.bind("<Button-3>", lambda _: self.__label5(cell))
+            elif possibility == 6:
+                new_label.bind("<Button-3>", lambda _: self.__label6(cell))
+            elif possibility == 7:
+                new_label.bind("<Button-3>", lambda _: self.__label7(cell))
+            elif possibility == 8:
+                new_label.bind("<Button-3>", lambda _: self.__label8(cell))
+            else:
+                new_label.bind("<Button-3>", lambda _: self.__label9(cell))
+
+            self.__label_list.append(new_label)
 
     def __draw_cursor(self):
         """
@@ -129,7 +158,7 @@ class SudokuUI(Frame):
 
     def __draw_text(self, text):
         self.text_field.tag_configure('message', foreground='#476042', font=FONT_HINTS, justify='left')
-        self.text_field.insert(END, text+'\n', 'message')
+        self.text_field.insert(END, text + '\n', 'message')
 
     """----------------------------------KEYS---------------------------------------"""
 
@@ -185,6 +214,41 @@ class SudokuUI(Frame):
             self.__draw_puzzle()
             self.__draw_cursor()
 
+    def __possibility_clicked(self, cell, value_of_label):
+        if value_of_label in cell.candidates:
+            cell.candidates.remove(value_of_label)
+        else:
+            cell.candidates.append(value_of_label)
+
+        self.update_possibilities(cell, cell.coordinates[0], cell.coordinates[1])
+
+    def __label1(self, cell):
+        self.__possibility_clicked(cell, 1)
+
+    def __label2(self, cell):
+        self.__possibility_clicked(cell, 2)
+
+    def __label3(self, cell):
+        self.__possibility_clicked(cell, 3)
+
+    def __label4(self, cell):
+        self.__possibility_clicked(cell, 4)
+
+    def __label5(self, cell):
+        self.__possibility_clicked(cell, 5)
+
+    def __label6(self, cell):
+        self.__possibility_clicked(cell, 6)
+
+    def __label7(self, cell):
+        self.__possibility_clicked(cell, 7)
+
+    def __label8(self, cell):
+        self.__possibility_clicked(cell, 8)
+
+    def __label9(self, cell):
+        self.__possibility_clicked(cell, 9)
+
     """----------------------------------BUTTONS---------------------------------------"""
 
     def __clear_answers(self):
@@ -207,13 +271,12 @@ class SudokuUI(Frame):
         Enables/Disables showing possible solutions. Resets all suggestions after turn off and on again
         """
         self.__show_possibilities = not self.__show_possibilities
-        if self.__show_possibilities:
-            self.game.grid.reset_possible_solutions_of_cells()
+        # if self.__show_possibilities:
+        #     self.game.grid.reset_possible_solutions_of_cells()
         self.__draw_puzzle()
 
     def __get_hint(self):
         strategy = SolutionStrategies(self.game).give_strategy()
-        if type(strategy) != bool and strategy['hint_type'] == SOLUTION:
-            self.game.grid.apply_hint(strategy)
+        self.game.grid.apply_hint(strategy)
         self.__draw_puzzle()
         self.__draw_text(strategy['message'])

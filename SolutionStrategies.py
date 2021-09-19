@@ -20,6 +20,16 @@ class SolutionStrategies:
                     if self._grid[i, j].get_value() != self._solution[i, j]:
                         self._grid[i, j].error = True
                         no_error = False
+                        self._concerning_cells.append(self._grid[i, j])
+                        self._hint_type = ERROR
+                        self._message = 'Your solution contains an error! I have marked at for you'
+                else:
+                    if self._solution[i, j] not in self._grid[i, j].candidates:
+                        no_error = False
+                        self._concerning_cells.append(self._grid[i, j])
+                        self._hint_type = ERROR
+                        self._message = "Your solution contains an error!\nYou eliminated " \
+                                        "the true value from the candidates list.\nI reset them for you"
         return no_error
 
     def _iterate_over_grid(self, func):
@@ -43,7 +53,7 @@ class SolutionStrategies:
 
     def give_strategy(self):
         if not self._check_with_sample_solution():
-            return False
+            return self._return_strategy()
         self._grid.reset_possible_solutions_of_cells()
         for method in dir(self):
             if method.startswith('_') is False and method.startswith('give') is False:

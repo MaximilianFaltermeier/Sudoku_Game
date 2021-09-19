@@ -7,7 +7,6 @@ class SudokuBoardReader(object):
     """
     Sudoku Board representation
     """
-
     def __init__(self, board_file):
         self.board = Grid()
         for line, row in zip(board_file, self.board.rows):
@@ -66,7 +65,8 @@ class SudokuGame(object):
         self.game_over = True
         return True
 
-    def __check_block(self, block):
+    @staticmethod
+    def __check_block(block):
         """
         Checks if one grid component contains all numbers 1-9
         :param block: grid component to be investigated

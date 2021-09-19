@@ -1,5 +1,5 @@
 from cell import Cell
-
+from global_constants import *
 
 class GridComponent:
     def __init__(self):
@@ -29,7 +29,7 @@ class GridIterator:
 
     def __next__(self):
         if self._index < 81:
-            cell = self._grid[int(self._index/9), self._index%9]
+            cell = self._grid[int(self._index / 9), self._index % 9]
             self._index += 1
             return cell
         raise StopIteration
@@ -88,6 +88,9 @@ class Grid:
         self.search_for_identical_values_in_components('blocks')
 
     def apply_hint(self, strategy):
-        strategy['concerning_cells'].pop().set_value(strategy['suggestions'].pop())
+        if strategy['hint_type'] == ERROR:
+            for cell in strategy['concerning_cells']:
+                cell.reset_candidates()
+        elif strategy['hint_type'] == SOLUTION:
+            strategy['concerning_cells'].pop().set_value(strategy['suggestions'].pop())
         self.update_possible_solutions_of_cells()
-
