@@ -42,6 +42,7 @@ class SudokuGame(object):
         for i in range(9):
             for j in range(9):
                 self.grid[i, j].set_value(self.start_puzzle[i, j].get_value(), given=True)
+        self.grid.update_candidates_of_cells()
 
     def get_solution(self):
         if len(self.__solution) == 0:

@@ -23,11 +23,13 @@ class SudokuUI(Frame):
         self.canvas = Canvas(self, width=WIDTH, height=HEIGHT, bg='white')
         self.canvas.pack(side=LEFT, pady='17', padx='15')
 
-        clear_button = Button(self, text="Clear answers", command=self.__clear_answers, font=FONT_BUTTONS)
-        check_button = Button(self, text="Check Sudoku", command=self.__find_errors, font=FONT_BUTTONS)
-        candidate_button = Button(self, text="Show candidates",
+        clear_button = Button(self, text="Clear answers", command=self.__clear_answers,
+                              font=FONT_BUTTONS, cursor="hand2")
+        check_button = Button(self, text="Check Sudoku", command=self.__find_errors,
+                              font=FONT_BUTTONS, cursor="hand2")
+        candidate_button = Button(self, text="Show candidates", cursor="hand2",
                                   command=self.__allow_candidates_to_be_displayed, font=FONT_BUTTONS)
-        hint_button = Button(self, text="Show hint", command=self.__get_hint, font=FONT_BUTTONS)
+        hint_button = Button(self, text="Show hint", command=self.__get_hint, font=FONT_BUTTONS, cursor="hand2")
 
         clear_button.place(relx=RELX_BUTTON, rely=0.5 + RELY_OFFSET_BUTTON)
         check_button.place(relx=RELX_BUTTON, rely=0.6 + RELY_OFFSET_BUTTON)
@@ -40,11 +42,11 @@ class SudokuUI(Frame):
         self.canvas.bind('<Button-1>', self.__cell_clicked)
         self.canvas.bind('<Key>', self.__key_pressed)
         self.canvas.bind('<BackSpace>', self.__back_space_key_pressed)
-        quote = 'If you want a hint, use the hint button\ngood luck :)\n'
+
         self.text_field = Text(self, height=15, width=60, padx=0)
         self.text_field.tag_configure('color', foreground='#476042', font=FONT_HINTS, justify='left')
 
-        self.text_field.insert('1.0', quote, 'color')
+        self.text_field.insert('1.0', INITIAL_COMMENT, 'color')
         self.text_field.tag_add('initialText', 1.0, END)
         self.text_field.pack(side=TOP, pady='20', padx='10')
 
@@ -110,6 +112,8 @@ class SudokuUI(Frame):
             new_label = Label(self.canvas, text=candidate, cursor="hand2", font=FONT_SUGGESTIONS,
                               bg='white', fg=digit_color, padx=-1, pady=-20)
             new_label.place(x=x, y=y)
+
+
             # new_label.bind("<Button-3>", lambda _: self.__candidate_clicked(cell, candidate))
             if candidate == 1:
                 new_label.bind("<Button-3>", lambda _: self.__label1(cell))
@@ -129,7 +133,8 @@ class SudokuUI(Frame):
                 new_label.bind("<Button-3>", lambda _: self.__label8(cell))
             else:
                 new_label.bind("<Button-3>", lambda _: self.__label9(cell))
-
+            new_label.bind("<Button-1>",
+                           lambda _: self.__candidate_left_clicked(cell.coordinates[0], cell.coordinates[1]))
             self.__label_list.append(new_label)
 
     def __draw_cursor(self):
@@ -176,15 +181,22 @@ class SudokuUI(Frame):
             # get row and col numbers from x,y coordinates
             row, col = int((y - MARGIN) / SIDE), int((x - MARGIN) / SIDE)
 
-            # if cell was selected already - deselect it
-            if (row, col) == (self.row, self.col):
-                self.row, self.col = -1, -1
-            elif not self.game.grid[row, col].given:
-                self.row, self.col = row, col
+            self.__select_cell(row, col)
         else:
             self.row, self.col = -1, -1
 
         self.__draw_cursor()
+
+    def __select_cell(self, row, col):
+        """
+        if cell was selected already - deselect it otherwise select it
+        :param col: column position of cell
+        :param row: row position of cell
+        """
+        if (row, col) == (self.row, self.col):
+            self.row, self.col = -1, -1
+        elif not self.game.grid[row, col].given:
+            self.row, self.col = row, col
 
     def __key_pressed(self, event):
         """
@@ -214,7 +226,7 @@ class SudokuUI(Frame):
             self.__draw_puzzle()
             self.__draw_cursor()
 
-    def __candidate_clicked(self, cell, value_of_label):
+    def __candidate_right_clicked(self, cell, value_of_label):
         if value_of_label in cell.candidates:
             cell.candidates.remove(value_of_label)
         else:
@@ -222,32 +234,36 @@ class SudokuUI(Frame):
 
         self.update_labels_of_candidates(cell, cell.coordinates[0], cell.coordinates[1])
 
+    def __candidate_left_clicked(self, row, col):
+        self.__select_cell(row, col)
+        self.__draw_cursor()
+
     def __label1(self, cell):
-        self.__candidate_clicked(cell, 1)
+        self.__candidate_right_clicked(cell, 1)
 
     def __label2(self, cell):
-        self.__candidate_clicked(cell, 2)
+        self.__candidate_right_clicked(cell, 2)
 
     def __label3(self, cell):
-        self.__candidate_clicked(cell, 3)
+        self.__candidate_right_clicked(cell, 3)
 
     def __label4(self, cell):
-        self.__candidate_clicked(cell, 4)
+        self.__candidate_right_clicked(cell, 4)
 
     def __label5(self, cell):
-        self.__candidate_clicked(cell, 5)
+        self.__candidate_right_clicked(cell, 5)
 
     def __label6(self, cell):
-        self.__candidate_clicked(cell, 6)
+        self.__candidate_right_clicked(cell, 6)
 
     def __label7(self, cell):
-        self.__candidate_clicked(cell, 7)
+        self.__candidate_right_clicked(cell, 7)
 
     def __label8(self, cell):
-        self.__candidate_clicked(cell, 8)
+        self.__candidate_right_clicked(cell, 8)
 
     def __label9(self, cell):
-        self.__candidate_clicked(cell, 9)
+        self.__candidate_right_clicked(cell, 9)
 
     """----------------------------------BUTTONS---------------------------------------"""
 
