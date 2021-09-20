@@ -56,7 +56,7 @@ class Cell:
                 to_be_removed_items.append(value)
 
         to_be_removed_items = set(to_be_removed_items)
-        self.candidates = list(to_be_removed_items.difference(set(self.candidates)))
+        self.candidates = list(set(self.candidates).difference(to_be_removed_items))
         #
         # to_be_removed_items = list(to_be_removed_items)
         #
