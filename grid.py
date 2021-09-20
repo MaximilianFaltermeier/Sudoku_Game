@@ -87,10 +87,18 @@ class Grid:
         self.search_for_identical_values_in_components('rows')
         self.search_for_identical_values_in_components('blocks')
 
+    # TODO: test extension of apply method
     def apply_hint(self, strategy):
         if strategy['hint_type'] == ERROR:
             for cell in strategy['concerning_cells']:
                 cell.reset_candidates()
         elif strategy['hint_type'] == SOLUTION:
             strategy['concerning_cells'].pop().set_value(strategy['suggestions'].pop())
+        elif strategy['hint_type'] == REMOVE_CANDIDATE:
+            digit_group = [tupel[0] for tupel in strategy['concerning_cells']]
+            for tupel in strategy['concerning_cells']:
+                for cell in tupel[1]:
+                    cell.candidates = list(set(digit_group).intersection(set(cell.candidates)))
+            for cell in strategy['suggestions']:
+                cell.candidates = list(set(digit_group).difference(set(cell.candidates)))
         self.update_candidates_of_cells()

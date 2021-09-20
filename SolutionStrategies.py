@@ -1,4 +1,5 @@
 from global_constants import *
+from copy import copy
 
 
 class SolutionStrategies:
@@ -40,6 +41,14 @@ class SolutionStrategies:
                     return True
         return False
 
+    def _iterate_over_grid_components(self, *args):
+        for grid_component in ['rows', 'columns', 'blocks']:
+            for cell_list in getattr(self._grid, grid_component):
+                func_output = args[0](cell_list, *args[1:])
+                if func_output:
+                    return True
+        return False
+
     def _return_strategy(self):
         self._solution_strategy = {
             'success': self._success,
@@ -68,6 +77,10 @@ class SolutionStrategies:
     '''--------------------------------strategies--------------------------------------------------'''
 
     def single_choice(self):
+        """
+        One cell has one single candidate left
+        :return:
+        """
         return self._iterate_over_grid(self._single_choice)
 
     def _single_choice(self, cell):
@@ -75,27 +88,129 @@ class SolutionStrategies:
             self._concerning_cells.append(cell)
             self._hint_type = SOLUTION
             self._suggestions = [cell.candidates[0]]
-            self._message = 'According the single_choice rule, a {} is placed at cell ({}, {})'\
+            self._message = 'According the single_choice rule, a {} is placed at cell ({}, {})' \
                 .format(self._suggestions[0], cell.coordinates[0] + 1, cell.coordinates[1] + 1)
             return True
         return False
 
     def hidden_single(self):
-        for grid_component in ['rows', 'columns', 'blocks']:
-            for cell_list in getattr(self._grid, grid_component):
-                for i in range(9):
-                    for candidate in cell_list[i].candidates:
-                        candidate_is_unique = True
-                        for j in range(9):
-                            if i != j and candidate in cell_list[j].candidates:
-                                candidate_is_unique = False
-                                break
-                        if candidate_is_unique:
-                            self._concerning_cells.append(cell_list[i])
-                            self._hint_type = SOLUTION
-                            self._suggestions = [candidate]
-                            self._message = 'According the hidden_single rule, a {} is placed at cell ({}, {})' \
-                                .format(self._suggestions[0], cell_list[i].coordinates[0] + 1,
-                                        cell_list[i].coordinates[1] + 1)
+        """
+        Number can be in just one cell of a grid component
+        :return:
+        """
+        return self._iterate_over_grid_components(self._hidden_single)
+
+    def _hidden_single(self, cell_list, *args):
+        for i in range(9):
+            for candidate in cell_list[i].candidates:
+                candidate_is_unique = True
+                for j in range(9):
+                    if i != j and candidate in cell_list[j].candidates:
+                        candidate_is_unique = False
+                        break
+                if candidate_is_unique:
+                    self._concerning_cells.append(cell_list[i])
+                    self._hint_type = SOLUTION
+                    self._suggestions = [candidate]
+                    self._message = 'According the hidden_single rule, a {} is placed at cell ({}, {})' \
+                        .format(self._suggestions[0], cell_list[i].coordinates[0] + 1,
+                                cell_list[i].coordinates[1] + 1)
+                    return True
+
+    # TODO: test naked_pair and naked_triple + sub-methods
+    def naked_pair(self):
+        """
+        There are two numbers which can be only in a cell pair
+        :return:
+        """
+        number_of_appearances = 2
+        return self._iterate_over_grid_components(self._naked_group, number_of_appearances)
+
+    def naked_triple(self):
+        """
+        There are three numbers which can be only in a cell pair
+        :return:
+        """
+        number_of_appearances = 3
+        return self._iterate_over_grid_components(self._naked_group, number_of_appearances)
+
+    def _naked_group(self, cell_list, number_of_appearances):
+        candidate_list = self._get_digit_with_n_appearances_as_candidate(cell_list, number_of_appearances)
+        self._n_digits_have_same_n_possible_positions(candidate_list, number_of_appearances)
+        for i in range(len(candidate_list)):
+            for j in range(i + 1, len(candidate_list)):
+                if candidate_list[i] == candidate_list[j]:
+                    break
+                if number_of_appearances == 2:
+                    if all([elem1 == elem2 for elem1, elem2 in zip(candidate_list[i][1], candidate_list[j][1])]):
+                        concerning_cells = [candidate_list[i], candidate_list[j]]
+                        self._prepare_output_for_naked_group_as_solution(concerning_cells)
+                        return True
+                elif number_of_appearances == 3:
+                    for k in range(j + 1, len(candidate_list)):
+                        if candidate_list[k] == candidate_list[j]:
+                            break
+                        if all([elem1 == elem2 and elem2 == elem3 for elem1, elem2, elem3 in
+                                (zip(candidate_list[i][1], candidate_list[j][1]), candidate_list[k][1])]):
+                            concerning_cells = [candidate_list[i], candidate_list[j], candidate_list[k]]
+                            self._prepare_output_for_naked_group_as_solution(concerning_cells)
                             return True
         return False
+
+    def _prepare_output_for_naked_group_as_solution(self, concerning_cells):
+        cells_with_obsolete_digits, candidates_can_be_removed = self._get_cells_with_obsolete_digits(concerning_cells)
+        if not candidates_can_be_removed:
+            # checks if candidates even can be removed else found group is useless
+            return False
+        self._concerning_cells.extend(concerning_cells)
+        self._hint_type = REMOVE_CANDIDATE
+        self._suggestions.extend(cells_with_obsolete_digits)
+        self._message = 'According the naked-group rule several obsolete candidates are removed'
+
+    def _n_digits_have_same_n_possible_positions(self, candidate_list, number_of_appearances):
+        new_candidates = []
+        for grid_component in ['rows', 'columns', 'blocks']:
+            for cell_list in getattr(self._grid, grid_component):
+                for i in range(len(cell_list)):
+                    for j in range(i, len(cell_list)):
+                        if len(set(cell_list[i].candidates).intersection(
+                                set(cell_list[j].candidates))) == number_of_appearances:
+                            if number_of_appearances == 3:
+                                for k in range(j, len(cell_list)):
+                                    if len(set(cell_list[k].candidates).intersection(
+                                            set(cell_list[j].candidates))) == number_of_appearances:
+                                        new_candidates.extend([cell_list[i], cell_list[j], cell_list[k]])
+                            else:
+                                new_candidates.extend([cell_list[i], cell_list[j]])
+        if new_candidates:
+            for digit in new_candidates[0].candidates:
+                candidate_list.append((digit, new_candidates))
+
+    def _get_cells_with_obsolete_digits(self, concerning_cells):
+        cell_candidates = []
+        set_concerning_cells_list = set([item for sublist in concerning_cells for item in sublist[1]])
+        list_concerning_digits = [elem[0] for elem in concerning_cells]
+        for grid_component in ['rows', 'columns', 'blocks']:
+            for cell_list in getattr(self._grid, grid_component):
+                if len(set(cell_list).intersection(set_concerning_cells_list)) == len(concerning_cells):
+                    cell_candidates.extend(list(set(cell_list).difference(set_concerning_cells_list)))
+                    cell_candidates = [cell for cell in cell_candidates if
+                                       set(list_concerning_digits) & set(cell.candidates)]
+        for cell in concerning_cells:
+            if set(cell.candidates).difference(set(list_concerning_digits)):
+                return cell_candidates, True
+        return cell_candidates, len(cell_candidates) > 0
+
+    @staticmethod
+    def _get_digit_with_n_appearances_as_candidate(cell_list, n):
+        candidate_list = []
+        for digit in range(9):
+            cell_appearance_list = []
+            for cell in cell_list:
+                if digit in cell.candidates:
+                    cell_appearance_list.append(cell)
+                    if len(cell_appearance_list) > n:
+                        break
+            if len(cell_appearance_list) == n:
+                candidate_list.append((digit, copy(cell_appearance_list)))
+        return candidate_list

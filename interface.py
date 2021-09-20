@@ -109,33 +109,32 @@ class SudokuUI(Frame):
             else:
                 digit_color = '#E0E0E0'
 
-            new_label = Label(self.canvas, text=candidate, cursor="hand2", font=FONT_SUGGESTIONS,
-                              bg='white', fg=digit_color, padx=-1, pady=-20)
-            new_label.place(x=x, y=y)
+            label_list = Label(self.canvas, text=candidate, cursor="hand2", font=FONT_SUGGESTIONS,
+                               bg='white', fg=digit_color, padx=-1, pady=-20)
+            label_list.place(x=x, y=y)
 
-
-            # new_label.bind("<Button-3>", lambda _: self.__candidate_clicked(cell, candidate))
+            # label_list.bind("<Button-3>", lambda _: self.__candidate_clicked(cell, candidate))
             if candidate == 1:
-                new_label.bind("<Button-3>", lambda _: self.__label1(cell))
+                label_list.bind("<Button-3>", lambda _: self.__label1(cell))
             elif candidate == 2:
-                new_label.bind("<Button-3>", lambda _: self.__label2(cell))
+                label_list.bind("<Button-3>", lambda _: self.__label2(cell))
             elif candidate == 3:
-                new_label.bind("<Button-3>", lambda _: self.__label3(cell))
+                label_list.bind("<Button-3>", lambda _: self.__label3(cell))
             elif candidate == 4:
-                new_label.bind("<Button-3>", lambda _: self.__label4(cell))
+                label_list.bind("<Button-3>", lambda _: self.__label4(cell))
             elif candidate == 5:
-                new_label.bind("<Button-3>", lambda _: self.__label5(cell))
+                label_list.bind("<Button-3>", lambda _: self.__label5(cell))
             elif candidate == 6:
-                new_label.bind("<Button-3>", lambda _: self.__label6(cell))
+                label_list.bind("<Button-3>", lambda _: self.__label6(cell))
             elif candidate == 7:
-                new_label.bind("<Button-3>", lambda _: self.__label7(cell))
+                label_list.bind("<Button-3>", lambda _: self.__label7(cell))
             elif candidate == 8:
-                new_label.bind("<Button-3>", lambda _: self.__label8(cell))
+                label_list.bind("<Button-3>", lambda _: self.__label8(cell))
             else:
-                new_label.bind("<Button-3>", lambda _: self.__label9(cell))
-            new_label.bind("<Button-1>",
-                           lambda _: self.__candidate_left_clicked(cell.coordinates[0], cell.coordinates[1]))
-            self.__label_list.append(new_label)
+                label_list.bind("<Button-3>", lambda _: self.__label9(cell))
+            label_list.bind("<Button-1>",
+                            lambda _: self.__candidate_left_clicked(cell.coordinates[0], cell.coordinates[1]))
+            self.__label_list.append(label_list)
 
     def __draw_cursor(self):
         """
