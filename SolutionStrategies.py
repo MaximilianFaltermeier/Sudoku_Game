@@ -135,7 +135,7 @@ class SolutionStrategies:
         return self._iterate_over_grid_components(self._naked_group, number_of_appearances)
 
     def _naked_group(self, cell_list, number_of_appearances):
-        candidate_list = self._get_digit_with_n_appearances_as_candidate(cell_list, number_of_appearances)
+        candidate_list = self._get_candidate_with_n_appearances(cell_list, number_of_appearances)
         self._n_digits_have_same_n_possible_positions(candidate_list, number_of_appearances)
         for i in range(len(candidate_list)):
             for j in range(i + 1, len(candidate_list)):
@@ -144,7 +144,7 @@ class SolutionStrategies:
                 if number_of_appearances == 2:
                     if all([elem1 == elem2 for elem1, elem2 in zip(candidate_list[i][1], candidate_list[j][1])]):
                         concerning_cells = [candidate_list[i], candidate_list[j]]
-                        self._prepare_output_for_naked_group_as_solution(concerning_cells)
+                        self._prepare_output_for_naked_group(concerning_cells)
                         return True
                 elif number_of_appearances == 3:
                     for k in range(j + 1, len(candidate_list)):
@@ -153,11 +153,11 @@ class SolutionStrategies:
                         if all([elem1 == elem2 and elem2 == elem3 for elem1, elem2, elem3 in
                                 (zip(candidate_list[i][1], candidate_list[j][1]), candidate_list[k][1])]):
                             concerning_cells = [candidate_list[i], candidate_list[j], candidate_list[k]]
-                            self._prepare_output_for_naked_group_as_solution(concerning_cells)
+                            self._prepare_output_for_naked_group(concerning_cells)
                             return True
         return False
 
-    def _prepare_output_for_naked_group_as_solution(self, concerning_cells):
+    def _prepare_output_for_naked_group(self, concerning_cells):
         cells_with_obsolete_digits, candidates_can_be_removed = self._get_cells_with_obsolete_digits(concerning_cells)
         if not candidates_can_be_removed:
             # checks if candidates even can be removed else found group is useless
@@ -173,18 +173,22 @@ class SolutionStrategies:
             for cell_list in getattr(self._grid, grid_component):
                 for i in range(len(cell_list)):
                     for j in range(i, len(cell_list)):
-                        if len(set(cell_list[i].candidates).intersection(
-                                set(cell_list[j].candidates))) == number_of_appearances:
+                        if self._check_if_candidate_interaction_has_size_n(cell_list[i], cell_list[j],
+                                                                           number_of_appearances):
                             if number_of_appearances == 3:
                                 for k in range(j, len(cell_list)):
-                                    if len(set(cell_list[k].candidates).intersection(
-                                            set(cell_list[j].candidates))) == number_of_appearances:
+                                    if self._check_if_candidate_interaction_has_size_n(cell_list[k], cell_list[j],
+                                                                                       number_of_appearances):
                                         new_candidates.extend([cell_list[i], cell_list[j], cell_list[k]])
                             else:
                                 new_candidates.extend([cell_list[i], cell_list[j]])
         if new_candidates:
             for digit in new_candidates[0].candidates:
                 candidate_list.append((digit, new_candidates))
+
+    @staticmethod
+    def _check_if_candidate_interaction_has_size_n(list1, list2, n):
+        return len(set(list1.candidates).intersection(set(list2.candidates))) == n
 
     def _get_cells_with_obsolete_digits(self, concerning_cells):
         cell_candidates = []
@@ -202,7 +206,7 @@ class SolutionStrategies:
         return cell_candidates, len(cell_candidates) > 0
 
     @staticmethod
-    def _get_digit_with_n_appearances_as_candidate(cell_list, n):
+    def _get_candidate_with_n_appearances(cell_list, n):
         candidate_list = []
         for digit in range(9):
             cell_appearance_list = []
