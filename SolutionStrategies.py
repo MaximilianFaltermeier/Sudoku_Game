@@ -193,11 +193,11 @@ class SolutionStrategies:
         for grid_component in ['rows', 'columns', 'blocks']:
             for cell_list in getattr(self._grid, grid_component):
                 if len(set(cell_list).intersection(set_concerning_cells_list)) == len(concerning_cells):
-                    cell_candidates.extend(list(set(cell_list).difference(set_concerning_cells_list)))
+                    cell_candidates.extend(list(set(cell_list).symmetric_difference(set_concerning_cells_list)))
                     cell_candidates = [cell for cell in cell_candidates if
                                        set(list_concerning_digits) & set(cell.candidates)]
         for cell in concerning_cells:
-            if set(cell.candidates).difference(set(list_concerning_digits)):
+            if set(cell.candidates).symmetric_difference(set(list_concerning_digits)):
                 return cell_candidates, True
         return cell_candidates, len(cell_candidates) > 0
 

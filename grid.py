@@ -100,5 +100,5 @@ class Grid:
                 for cell in tupel[1]:
                     cell.candidates = list(set(digit_group).intersection(set(cell.candidates)))
             for cell in strategy['suggestions']:
-                cell.candidates = list(set(digit_group).difference(set(cell.candidates)))
+                cell.candidates = list(set(digit_group).symmetric_difference(set(cell.candidates)))
         self.update_candidates_of_cells()

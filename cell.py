@@ -55,13 +55,13 @@ class Cell:
             elif value in [cell.get_value() for cell in self.block]:
                 to_be_removed_items.append(value)
 
-        # this special construction deals with the challenge to have no doubling in to_be_removed_items
-        # else list.remove() throws an error
         to_be_removed_items = set(to_be_removed_items)
-        to_be_removed_items = list(to_be_removed_items)
-
-        for elem in to_be_removed_items:
-            self.candidates.remove(elem)
+        self.candidates = list(to_be_removed_items.difference(set(self.candidates)))
+        #
+        # to_be_removed_items = list(to_be_removed_items)
+        #
+        # for elem in to_be_removed_items:
+        #     self.candidates.remove(elem)
 
     def reset_candidates(self):
         self.candidates = list(range(1, 10))
