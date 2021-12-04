@@ -1,6 +1,7 @@
 from tkinter import Canvas, Frame, Button, TOP, Text, END, LEFT, Label, BOTTOM
 from global_constants import *
 from SolutionStrategies import SolutionStrategies
+from functools import partial
 
 
 class SudokuUI(Frame):
@@ -113,25 +114,26 @@ class SudokuUI(Frame):
                                bg='white', fg=digit_color, padx=-1, pady=-20)
             label_list.place(x=x, y=y)
 
-            # label_list.bind("<Button-3>", lambda _: self.__candidate_clicked(cell, candidate))
-            if candidate == 1:
-                label_list.bind("<Button-3>", lambda _: self.__label1(cell))
-            elif candidate == 2:
-                label_list.bind("<Button-3>", lambda _: self.__label2(cell))
-            elif candidate == 3:
-                label_list.bind("<Button-3>", lambda _: self.__label3(cell))
-            elif candidate == 4:
-                label_list.bind("<Button-3>", lambda _: self.__label4(cell))
-            elif candidate == 5:
-                label_list.bind("<Button-3>", lambda _: self.__label5(cell))
-            elif candidate == 6:
-                label_list.bind("<Button-3>", lambda _: self.__label6(cell))
-            elif candidate == 7:
-                label_list.bind("<Button-3>", lambda _: self.__label7(cell))
-            elif candidate == 8:
-                label_list.bind("<Button-3>", lambda _: self.__label8(cell))
-            else:
-                label_list.bind("<Button-3>", lambda _: self.__label9(cell))
+            # label_list.bind("<Button-3>", lambda a=cell, b=candidate: self.__candidate_right_clicked(cell, candidate))
+            label_list.bind("<Button-3>", partial(self.__candidate_right_clicked, cell, candidate))
+            # if candidate == 1:
+            #     label_list.bind("<Button-3>", lambda _: self.__label1(cell))
+            # elif candidate == 2:
+            #     label_list.bind("<Button-3>", lambda _: self.__label2(cell))
+            # elif candidate == 3:
+            #     label_list.bind("<Button-3>", lambda _: self.__label3(cell))
+            # elif candidate == 4:
+            #     label_list.bind("<Button-3>", lambda _: self.__label4(cell))
+            # elif candidate == 5:
+            #     label_list.bind("<Button-3>", lambda _: self.__label5(cell))
+            # elif candidate == 6:
+            #     label_list.bind("<Button-3>", lambda _: self.__label6(cell))
+            # elif candidate == 7:
+            #     label_list.bind("<Button-3>", lambda _: self.__label7(cell))
+            # elif candidate == 8:
+            #     label_list.bind("<Button-3>", lambda _: self.__label8(cell))
+            # else:
+            #     label_list.bind("<Button-3>", lambda _: self.__label9(cell))
             label_list.bind("<Button-1>",
                             lambda _: self.__candidate_left_clicked(cell.coordinates[0], cell.coordinates[1]))
             self.__label_list.append(label_list)
@@ -225,7 +227,7 @@ class SudokuUI(Frame):
             self.__draw_puzzle()
             self.__draw_cursor()
 
-    def __candidate_right_clicked(self, cell, value_of_label):
+    def __candidate_right_clicked(self, cell, value_of_label, *args):
         if value_of_label in cell.candidates:
             cell.candidates.remove(value_of_label)
         else:
@@ -237,32 +239,32 @@ class SudokuUI(Frame):
         self.__select_cell(row, col)
         self.__draw_cursor()
 
-    def __label1(self, cell):
-        self.__candidate_right_clicked(cell, 1)
-
-    def __label2(self, cell):
-        self.__candidate_right_clicked(cell, 2)
-
-    def __label3(self, cell):
-        self.__candidate_right_clicked(cell, 3)
-
-    def __label4(self, cell):
-        self.__candidate_right_clicked(cell, 4)
-
-    def __label5(self, cell):
-        self.__candidate_right_clicked(cell, 5)
-
-    def __label6(self, cell):
-        self.__candidate_right_clicked(cell, 6)
-
-    def __label7(self, cell):
-        self.__candidate_right_clicked(cell, 7)
-
-    def __label8(self, cell):
-        self.__candidate_right_clicked(cell, 8)
-
-    def __label9(self, cell):
-        self.__candidate_right_clicked(cell, 9)
+    # def __label1(self, cell):
+    #     self.__candidate_right_clicked(cell, 1)
+    #
+    # def __label2(self, cell):
+    #     self.__candidate_right_clicked(cell, 2)
+    #
+    # def __label3(self, cell):
+    #     self.__candidate_right_clicked(cell, 3)
+    #
+    # def __label4(self, cell):
+    #     self.__candidate_right_clicked(cell, 4)
+    #
+    # def __label5(self, cell):
+    #     self.__candidate_right_clicked(cell, 5)
+    #
+    # def __label6(self, cell):
+    #     self.__candidate_right_clicked(cell, 6)
+    #
+    # def __label7(self, cell):
+    #     self.__candidate_right_clicked(cell, 7)
+    #
+    # def __label8(self, cell):
+    #     self.__candidate_right_clicked(cell, 8)
+    #
+    # def __label9(self, cell):
+    #     self.__candidate_right_clicked(cell, 9)
 
     """----------------------------------BUTTONS---------------------------------------"""
 

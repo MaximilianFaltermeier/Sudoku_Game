@@ -33,6 +33,8 @@ class Cell:
         elif self.given:
             raise SudokuError('given value cannot be overwritten')
         self.__value = number
+        if number != 0:
+            self.candidates = []
         self.error = False
 
     def get_value(self):
@@ -65,3 +67,7 @@ class Cell:
 
     def reset_candidates(self):
         self.candidates = list(range(1, 10))
+
+    def set_candidates(self, candidates):
+        self.candidates = candidates
+

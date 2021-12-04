@@ -1,5 +1,15 @@
 from global_constants import *
-from copy import copy
+from itertools import product
+
+
+def _index_product(length):
+    x = []
+    y = []
+    for i, j in product(range(length), repeat=2):
+        if i < j:
+            x.append(i)
+            y.append(j)
+    return zip(x, y)
 
 
 class SolutionStrategies:
@@ -134,87 +144,86 @@ class SolutionStrategies:
         number_of_appearances = 3
         return self._iterate_over_grid_components(self._naked_group, number_of_appearances)
 
-    def _naked_group(self, cell_list, number_of_appearances):
-        candidate_list = self._get_candidate_with_n_appearances(cell_list, number_of_appearances)
-        self._n_digits_have_same_n_possible_positions(candidate_list, number_of_appearances)
-        for i in range(len(candidate_list)):
-            for j in range(i + 1, len(candidate_list)):
-                if candidate_list[i] == candidate_list[j]:
-                    break
-                if number_of_appearances == 2:
-                    if all([elem1 == elem2 for elem1, elem2 in zip(candidate_list[i][1], candidate_list[j][1])]):
-                        concerning_cells = [candidate_list[i], candidate_list[j]]
-                        self._prepare_output_for_naked_group(concerning_cells)
-                        return True
-                elif number_of_appearances == 3:
-                    for k in range(j + 1, len(candidate_list)):
-                        if candidate_list[k] == candidate_list[j]:
-                            break
-                        if all([elem1 == elem2 and elem2 == elem3 for elem1, elem2, elem3 in
-                                (zip(candidate_list[i][1], candidate_list[j][1]), candidate_list[k][1])]):
-                            concerning_cells = [candidate_list[i], candidate_list[j], candidate_list[k]]
-                            self._prepare_output_for_naked_group(concerning_cells)
-                            return True
-        return False
-
-    def _prepare_output_for_naked_group(self, concerning_cells):
-        cells_with_obsolete_digits, candidates_can_be_removed = self._get_cells_with_obsolete_digits(concerning_cells)
-        if not candidates_can_be_removed:
-            # checks if candidates even can be removed else found group is useless
+    @staticmethod
+    def _naked_group(cell_list, group_size):
+        candidate_list = SolutionStrategies._get_candidate_with_n_appearances(cell_list, group_size)
+        if candidate_list:
+            return True
+        candidate_list = SolutionStrategies._n_cells_same_n_candidates(cell_list, group_size)
+        if candidate_list:
+            return True
+        else:
             return False
-        self._concerning_cells.extend(concerning_cells)
-        self._hint_type = REMOVE_CANDIDATE
-        self._suggestions.extend(cells_with_obsolete_digits)
-        self._message = 'According the naked-group rule several obsolete candidates are removed'
-
-    def _n_digits_have_same_n_possible_positions(self, candidate_list, number_of_appearances):
-        new_candidates = []
-        for grid_component in ['rows', 'columns', 'blocks']:
-            for cell_list in getattr(self._grid, grid_component):
-                for i in range(len(cell_list)):
-                    for j in range(i, len(cell_list)):
-                        if self._check_if_candidate_interaction_has_size_n(cell_list[i], cell_list[j],
-                                                                           number_of_appearances):
-                            if number_of_appearances == 3:
-                                for k in range(j, len(cell_list)):
-                                    if self._check_if_candidate_interaction_has_size_n(cell_list[k], cell_list[j],
-                                                                                       number_of_appearances):
-                                        new_candidates.extend([cell_list[i], cell_list[j], cell_list[k]])
-                            else:
-                                new_candidates.extend([cell_list[i], cell_list[j]])
-        if new_candidates:
-            for digit in new_candidates[0].candidates:
-                candidate_list.append((digit, new_candidates))
 
     @staticmethod
-    def _check_if_candidate_interaction_has_size_n(list1, list2, n):
-        return len(set(list1.candidates).intersection(set(list2.candidates))) == n
+    def _get_candidate_with_n_appearances(cell_list, group_size):
+        filtered_cell_list, digit_set = SolutionStrategies._get_digits_with_n_appearance(cell_list, group_size)
+        return SolutionStrategies._propose_candidate(filtered_cell_list, group_size, digit_set)
 
-    def _get_cells_with_obsolete_digits(self, concerning_cells):
-        cell_candidates = []
-        set_concerning_cells_list = set([item for sublist in concerning_cells for item in sublist[1]])
-        list_concerning_digits = [elem[0] for elem in concerning_cells]
-        for grid_component in ['rows', 'columns', 'blocks']:
-            for cell_list in getattr(self._grid, grid_component):
-                if len(set(cell_list).intersection(set_concerning_cells_list)) == len(concerning_cells):
-                    cell_candidates.extend(list(set(cell_list).symmetric_difference(set_concerning_cells_list)))
-                    cell_candidates = [cell for cell in cell_candidates if
-                                       set(list_concerning_digits) & set(cell.candidates)]
-        for cell in concerning_cells:
-            if set(cell.candidates).symmetric_difference(set(list_concerning_digits)):
-                return cell_candidates, True
-        return cell_candidates, len(cell_candidates) > 0
 
     @staticmethod
-    def _get_candidate_with_n_appearances(cell_list, n):
-        candidate_list = []
-        for digit in range(9):
-            cell_appearance_list = []
+    def _propose_candidate(filtered_cell_list, group_size, digit_set):
+        len_cache = len(filtered_cell_list)
+        cell_cache = []
+        for i, j in _index_product(len_cache):
+            jth_cell = filtered_cell_list[j]
+            jth_cell_candidates_set = set(jth_cell.candidates)
+            ith_cell = filtered_cell_list[i]
+            candidates_intersection = set(ith_cell.candidates).intersection(jth_cell_candidates_set)
+            intersection_digit_candidates = candidates_intersection.intersection(digit_set)
+            if len(intersection_digit_candidates) == group_size:
+                cell_cache = [ith_cell, jth_cell]
+                if group_size == 3:
+                    for k in range(j+1, len_cache):
+                        kth_cell = filtered_cell_list[k]
+                        k_cell_candidates_set = set(kth_cell.candidates)
+                        candidates_intersection_2 = k_cell_candidates_set.intersection(digit_set)
+                        if candidates_intersection_2 == intersection_digit_candidates:
+                            cell_cache.append(kth_cell)
+                            return cell_cache
+                    cell_cache = []
+                else:
+                    return cell_cache
+        return cell_cache
+
+    @staticmethod
+    def _get_digits_with_n_appearance(cell_list, number_of_appearances):
+        digit_list = []
+        filtered_cell_list = []
+
+        for digit in range(1, 10):
+            counter = 0
             for cell in cell_list:
                 if digit in cell.candidates:
-                    cell_appearance_list.append(cell)
-                    if len(cell_appearance_list) > n:
+                    counter += 1
+                if counter > number_of_appearances:
+                    break
+            if counter == number_of_appearances:
+                digit_list.append(digit)
+        digit_set = set(digit_list)
+        for cell in cell_list:
+            if len(set(cell.candidates).intersection(digit_set)) >= number_of_appearances:
+                filtered_cell_list.append(cell)
+        return filtered_cell_list, digit_set
+
+
+    @staticmethod
+    def _n_cells_same_n_candidates(cell_list, number_of_appearances):
+        cell_list_cache = [cell for cell in cell_list if len(cell.candidates) == number_of_appearances]
+        len_cache = len(cell_list_cache)
+        for i in range(len_cache):
+            for j in range(i+1, len_cache):
+                j_cell_to_set = set(cell_list_cache[j].candidates)
+                cell_intersection = set(cell_list_cache[i].candidates).intersection(j_cell_to_set)
+                if len(cell_intersection) == number_of_appearances:
+                    cell_cache = [cell_list_cache[i], cell_list_cache[j]]
+                    if number_of_appearances == 3:
+                        for k in range(j+1, len_cache):
+                            if set(cell_list_cache[k].candidates).intersection(j_cell_to_set) == cell_intersection:
+                                cell_cache.append(cell_list_cache[k])
+                                return cell_cache
                         break
-            if len(cell_appearance_list) == n:
-                candidate_list.append((digit, copy(cell_appearance_list)))
-        return candidate_list
+                    else:
+                        return cell_cache
+        return []
+
