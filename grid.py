@@ -95,10 +95,6 @@ class Grid:
         elif strategy['hint_type'] == SOLUTION:
             strategy['concerning_cells'].pop().set_value(strategy['suggestions'].pop())
         elif strategy['hint_type'] == REMOVE_CANDIDATE:
-            digit_group = [tupel[0] for tupel in strategy['concerning_cells']]
-            for tupel in strategy['concerning_cells']:
-                for cell in tupel[1]:
-                    cell.candidates = list(set(digit_group).intersection(set(cell.candidates)))
-            for cell in strategy['suggestions']:
-                cell.candidates = list(set(digit_group).symmetric_difference(set(cell.candidates)))
+            for cell, new_candidates in zip(strategy['concerning_cells'], strategy['suggestions']):
+                cell.candidates = new_candidates
         self.update_candidates_of_cells()

@@ -59,6 +59,7 @@ class SolutionStrategies:
                     return True
         return False
 
+    # TODO: replace dict through class solution_strategy
     def _return_strategy(self):
         self._solution_strategy = {
             'success': self._success,
@@ -127,7 +128,6 @@ class SolutionStrategies:
                                 cell_list[i].coordinates[1] + 1)
                     return True
 
-    # TODO: test naked_pair and naked_triple + sub-methods
     def naked_pair(self):
         """
         There are two numbers which can be only in a cell pair
@@ -138,20 +138,23 @@ class SolutionStrategies:
 
     def naked_triple(self):
         """
-        There are three numbers which can be only in a cell pair
+        There are three numbers which can be only in a group of three cells
         :return:
         """
         number_of_appearances = 3
         return self._iterate_over_grid_components(self._naked_group, number_of_appearances)
 
-    @staticmethod
-    def _naked_group(cell_list, group_size):
-        candidate_list = SolutionStrategies._get_candidate_with_n_appearances(cell_list, group_size)
-        if candidate_list:
-            return True
-        candidate_list = SolutionStrategies._n_cells_same_n_candidates(cell_list, group_size)
-        if candidate_list:
-            return True
+    def _naked_group(self, cell_list, group_size):
+        candidate_list, suggestion = SolutionStrategies._get_candidate_with_n_appearances(cell_list, group_size)
+        if not candidate_list or not self._test_if_suggestion_gives_new_information(cell_list, candidate_list,
+                                                                                    suggestion):
+            candidate_list, suggestion = SolutionStrategies._n_cells_same_n_candidates(cell_list, group_size)
+        if candidate_list and self._test_if_suggestion_gives_new_information(cell_list, candidate_list, suggestion):
+            self._concerning_cells = cell_list
+            self._hint_type = REMOVE_CANDIDATE
+            self._suggestions = self._get_suggestion(cell_list, candidate_list, suggestion)
+            self._message = 'According the naked_group rule candidates have been removed (group_size = {})' \
+                .format(group_size)
         else:
             return False
 
@@ -160,31 +163,33 @@ class SolutionStrategies:
         filtered_cell_list, digit_set = SolutionStrategies._get_digits_with_n_appearance(cell_list, group_size)
         return SolutionStrategies._propose_candidate(filtered_cell_list, group_size, digit_set)
 
-
     @staticmethod
     def _propose_candidate(filtered_cell_list, group_size, digit_set):
         len_cache = len(filtered_cell_list)
         cell_cache = []
+
         for i, j in _index_product(len_cache):
             jth_cell = filtered_cell_list[j]
             jth_cell_candidates_set = set(jth_cell.candidates)
             ith_cell = filtered_cell_list[i]
+
             candidates_intersection = set(ith_cell.candidates).intersection(jth_cell_candidates_set)
             intersection_digit_candidates = candidates_intersection.intersection(digit_set)
+
             if len(intersection_digit_candidates) == group_size:
                 cell_cache = [ith_cell, jth_cell]
                 if group_size == 3:
-                    for k in range(j+1, len_cache):
+                    for k in range(j + 1, len_cache):
                         kth_cell = filtered_cell_list[k]
                         k_cell_candidates_set = set(kth_cell.candidates)
                         candidates_intersection_2 = k_cell_candidates_set.intersection(digit_set)
                         if candidates_intersection_2 == intersection_digit_candidates:
                             cell_cache.append(kth_cell)
-                            return cell_cache
+                            return cell_cache, intersection_digit_candidates
                     cell_cache = []
                 else:
-                    return cell_cache
-        return cell_cache
+                    return cell_cache, intersection_digit_candidates
+        return cell_cache, {}
 
     @staticmethod
     def _get_digits_with_n_appearance(cell_list, number_of_appearances):
@@ -200,30 +205,53 @@ class SolutionStrategies:
                     break
             if counter == number_of_appearances:
                 digit_list.append(digit)
+
         digit_set = set(digit_list)
         for cell in cell_list:
             if len(set(cell.candidates).intersection(digit_set)) >= number_of_appearances:
                 filtered_cell_list.append(cell)
         return filtered_cell_list, digit_set
 
-
     @staticmethod
     def _n_cells_same_n_candidates(cell_list, number_of_appearances):
         cell_list_cache = [cell for cell in cell_list if len(cell.candidates) == number_of_appearances]
         len_cache = len(cell_list_cache)
+
         for i in range(len_cache):
-            for j in range(i+1, len_cache):
+            for j in range(i + 1, len_cache):
+
                 j_cell_to_set = set(cell_list_cache[j].candidates)
                 cell_intersection = set(cell_list_cache[i].candidates).intersection(j_cell_to_set)
                 if len(cell_intersection) == number_of_appearances:
                     cell_cache = [cell_list_cache[i], cell_list_cache[j]]
+
                     if number_of_appearances == 3:
-                        for k in range(j+1, len_cache):
+                        for k in range(j + 1, len_cache):
                             if set(cell_list_cache[k].candidates).intersection(j_cell_to_set) == cell_intersection:
                                 cell_cache.append(cell_list_cache[k])
-                                return cell_cache
+                                return cell_cache, cell_intersection
                         break
                     else:
-                        return cell_cache
-        return []
+                        return cell_cache, cell_intersection
+        return [], {}
 
+    @staticmethod
+    def _test_if_suggestion_gives_new_information(cell_list, candidate_list, suggestion):
+        for cell in cell_list:
+            if cell in candidate_list:
+                if len(set(cell.candidates).intersection(suggestion)) < len(cell.candidates):
+                    return True
+            else:
+                if len(set(cell.candidates).intersection(suggestion)) > 0:
+                    return True
+        return False
+
+    @staticmethod
+    def _get_suggestion(cell_list, candidate_list, suggestion):
+        list_cache = []
+        for cell in cell_list:
+            if cell in candidate_list:
+                list_cache.append(list(suggestion))
+            else:
+                list_cache.append(list(set(cell.candidates).difference(suggestion)))
+        return list_cache
