@@ -33,7 +33,7 @@ class SolutionStrategies:
                         no_error = False
                         self._concerning_cells.append(self._grid[i, j])
                         self._hint_type = ERROR
-                        self._message = 'Your solution contains an error! I have marked at for you'
+                        self._message = 'Your solution contains an error! I have marked it for you'
                 else:
                     if self._solution[i, j] not in self._grid[i, j].candidates:
                         no_error = False
