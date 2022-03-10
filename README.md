@@ -13,4 +13,4 @@ I have three coding principles:
 
 1. a code is supposed to be readable without comments like an 'ordinary text'.
 2. test-driven-development. This means that test functions are written before the actual function is implemented
-3. If a new function is introduced, the code will be just changed as minimal as possible. This also means that changes only refer to the next step/function. There are no preparations for future functions. Why? This keeps code simple. Most future plans will be changed anyway. (compare sprint in scrum guideline)
+3. Minimal changes: If a new function is introduced, the code will be just changed as minimal as possible. This also means that changes only refer to the next step/function/sprint. There are no preparations for future functions. Why? This keeps code simple. Most future plans will be changed anyway. (compare sprint in scrum guideline)
