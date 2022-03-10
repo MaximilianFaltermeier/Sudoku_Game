@@ -1,6 +1,6 @@
 # Sudoku_Game
 
-Welcome to be Sudoku game. This is an example project to see my coding style. Here is a short description about what is can do:
+Welcome to my Sudoku game. This is an example project to see my coding style. Here is a short description about what is can do:
 
 This program loads in a sudoku (stored as a .txt) and displays it. I use tKinter for the GUI. The game can be played like any ordinary sudoku game.
 Fill in numbers, delete numbers etc. The game can show you all possibilities. The program generates a sample solution by itself with a self-developed
